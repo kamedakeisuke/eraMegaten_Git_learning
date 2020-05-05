@@ -4,7 +4,11 @@
 *.exe
 *.txt
 CSV/*
-ERB/*
+
+ERB/
+!/ERB/RPG/アイテム関連/装備品/剣/2026_真紅の長巻.ERB
+!/ERB/RPG/ダンジョンアタック/ダンジョンデータ/DUNGEON27_東京タワー.ERB
+
 resources/*
 readme集/*
 各種テンプレート/*

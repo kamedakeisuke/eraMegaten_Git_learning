@@ -1,0 +1,2255 @@
+﻿;=======================================================================
+;東京タワー
+;ダンジョンナンバー27　ＭＡＰ0~2
+;フラグ
+;ダンジョンフラグ:27:1  クリアフラグ
+;ダンジョンフラグ:27:10 突入フラグ　BIT:1　初回　BIT:10　愛城華恋初回（クリアフラグ前）　BIT:11　愛城華恋初回（クリアフラグ後）
+;ダンジョンフラグ:27:11 魔女の去就（0～9：戦闘前・戦闘中　11：魔女を助けた　12：魔女を助けた＋加入　13：メシア教が占拠　14：ファントムが占領）
+;ダンジョンフラグ:27:12 SCP-191加入フラグ
+;ダンジョンフラグ:27:13 かれひか観光フラグ　BIT:1水族館　BIT:2お土産屋　BIT:3展望台　BIT:4東京タワーの主に挨拶　BIT:5かれひか観光完了
+;ダンジョンフラグ:27:14 ジャックフロストのお店フラグ　BIT:0=木刀　BIT:1=東京タワーソード　BIT:2=アーマー　BIT:3=アーム　BIT:4=靴　BIT:5=耐破魔リング
+
+;
+;外部ファイル
+;イベントフラグ:93:1　BIT演算:3　1=愛城華恋イベント3
+;イベントフラグ:93:1　BIT演算:4　1=愛城華恋イベント4
+;
+;=======================================================================
+;
+;元ネタは女神転生2における魔女の居城としての東京タワー
+;ただし内部構造はオリジナルに
+;だって元のマップめたくそ狭いんだもん
+;
+;=======================================================================
+;更新履歴
+;=======================================================================
+;日付　　　　　主犯　　　　　　　　更新内容
+;2019/10/25　　(ﾟдﾟ)　　　　　　　新規作成
+;2020/02/12　　(ﾟдﾟ)　　　　　　　バルドルをミュータントに差し替え
+;2020/04/22　　(ﾟдﾟ)　　　　　　　バグ修正とジャックフロストのお店開店、ボス敵のLvを42に引き上げ
+;2020/05/04　　(ﾟдﾟ)　　　　　　　東京タワーを赤く塗ったぞ！！！
+;
+;=======================================================================
+;攻略条件
+;=======================================================================
+@PREREQUISITE_DUNGEON_27
+;東京タワーを制圧せよ　を通過済み
+SIF イベントフラグ:49:0
+	RETURN 1
+RETURN 0
+
+
+
+;=======================================================================
+;ダンジョン名
+;=======================================================================
+@GET_DUNGEON_NAME_27
+RESULTS = 東京タワー
+
+
+;=======================================================================
+;フロア名表示
+;=======================================================================
+@FLOORNAME_27
+PRINT 東京タワー
+SELECTCASE FLAG:現M
+	CASE 0
+		PRINTL 東京タワー周辺
+	CASE 1
+		PRINTL タワービル
+	CASE 2
+		PRINTL メインデッキ
+	CASE 3
+		PRINTL トップデッキ
+	CASE 4
+		PRINTL ？？？
+	CASEELSE
+		PRINTL ？？？？？
+ENDSELECT
+
+;=======================================================================
+;スタート地点入力
+;=======================================================================
+@START_DUNGEON_27,ARG
+FLAG:現M = 0
+FLAG:現X = 7
+FLAG:現Y = 8
+;CALL AUTOMAP
+
+;=======================================================================
+;攻略開始時のイベント
+;=======================================================================
+@EVENT_DUNGEON_START_27
+CALL SHOW_PICTURE, "D"
+IF GETBIT(ダンジョンフラグ:27:10,1) == 0
+	IF イベントフラグ:49:0 == 1
+		CALL MESSAGE_WINDOW_D, "", "＞メシア教の依頼を受けたあなたは、現場へと足を踏み入れた。/＞既に信者たちが住民と小競り合いをしているようだ……"
+	
+	ELSEIF イベントフラグ:49:0 == 2
+		CALL MESSAGE_WINDOW_D, "", "＞あなたは、幾重にも張られた結界を抜けて、東京タワー周辺までたどり着いた。/＞ボロ小屋や廃ビルの中から、怯えたような目線が、幾つもこちらを見つめている……"
+	
+	ELSEIF イベントフラグ:49:0 == 3
+		CALL MESSAGE_WINDOW_D, "", "＞あなたがたどり着いたとき、既に東京タワー周辺は、無数の天使に囲まれていた。/＞あなたは殺意を漲らせ敵地の中へと突入した。"
+	ENDIF
+	
+	;突入フラグON
+	SETBIT ダンジョンフラグ:27:10,1
+ENDIF
+
+
+;クリアフラグが立っている
+IF ダンジョンフラグ:27:1 && GETBIT(ダンジョンフラグ:27:10,11) == 0
+	;かれひか揃い
+	IF FINDCHARA_B([[キャラ:華恋]]) == 2 && FINDCHARA_B([[キャラ:ひかり]]) == 2
+		CALL MESSAGE_WINDOW_D, "", "＞東京タワーを見上げた舞台少女たちが悲しげな顔をしている"
+		CALL MESSAGE_WINDOW_D, "華恋", "私たちの知ってる東京タワーとは……違うね"
+		CALL MESSAGE_WINDOW_D, "ひかり", "わかり切っていたことでしょ/何をいまさら言っているの/……お願いします、この子に、現実を見せてあげて"
+		CALL MESSAGE_WINDOW_D, "", "＞あなたは適当に返事をした/＞さびれた水族館跡でも見せてやれば正気になるだろう……"
+		
+		SETBIT ダンジョンフラグ:27:10,10
+		SETBIT ダンジョンフラグ:27:10,11
+		
+	;華恋しか居ない（※水族館入れません）
+	ELSEIF FINDCHARA_B([[キャラ:華恋]]) == 2
+		CALL MESSAGE_WINDOW_D, "華恋", "これが東京タワー……なの？"
+		CALL MESSAGE_WINDOW_D, "", "＞あなたは適当に返事をした/＞神楽ひかりを連れて来ていないのが心配だが、/＞まあ、さびれた水族館跡でも見せてやれば現実が見えるだろう……"
+		
+	;ひかりしか居ない（※水族館入れません）
+	ELSEIF FINDCHARA_B([[キャラ:ひかり]]) == 2
+		CALL MESSAGE_WINDOW_D, "ひかり", "私だけ連れて来られても、困る"
+		CALL MESSAGE_WINDOW_D, "", "＞ひかりは辛そうに目を伏せている/＞変わり果てた東京タワーを、直視したくないのだろう"
+	ENDIF
+	
+;クリアフラグが立ってない
+ELSEIF GETBIT(ダンジョンフラグ:27:10,10) == 0
+	SIF FINDCHARA_B([[キャラ:華恋]]) == 2
+		CALL MESSAGE_WINDOW_D, "華恋", "東京……タワー……？"
+	SIF FINDCHARA_B([[キャラ:ひかり]]) == 2
+		CALL MESSAGE_WINDOW_D, "ひかり", "東京タワーが……東京タワーが……"
+	
+	IF FINDCHARA_B([[キャラ:華恋]]) == 2 || FINDCHARA_B([[キャラ:ひかり]]) == 2
+		CALL MESSAGE_WINDOW_D, "", "＞いけない、夢見る舞台少女が、/＞厳しい現実に白目を剥き始めた"
+		CALL MESSAGE_WINDOW_D, "", "＞あなたは、ショックでがくがく痙攣し始めた少女に/＞『とりあえず今日は何も考えず仕事を手伝って』とだけ言い聞かせ、/＞取り落としてしまった武器を握らせ直した"
+		;愛城華恋突入フラグON
+		SETBIT ダンジョンフラグ:27:10,10
+	ENDIF
+	
+ENDIF
+
+
+;=======================================================================
+;脱出時のイベント
+;=======================================================================
+@EVENT_DUNGEON_END_27
+;ダンジョン脱出時、クリアフラグが立っていない
+IF !ダンジョンフラグ:27:1
+	;魔女を殺害＆メシア教の依頼を受けている場合、賞金と名声GET
+	IF ダンジョンフラグ:27:11 == 13 && イベントフラグ:49:0 == 1
+		CALL SHOW_PICTURE, "D"
+		CALL MESSAGE_WINDOW_D, "", @"＞賞金首・東京タワーの魔女を討伐した/＞口座に￥25000が支払われ、名声20を得た"
+		;ちょっとロウに変動
+		CFLAG:MASTER:秩混値 += 16
+		MONEY += 25000
+		FLAG:名声 += 20
+		ダンジョンフラグ:27:1 = 1
+	;魔女を殺害＆依頼は受けてない場合、名声だけGET
+	ELSEIF ダンジョンフラグ:27:11 == 13 && イベントフラグ:49:0 == 2
+		CALL SHOW_PICTURE, "D"
+		CALL MESSAGE_WINDOW_D, "", @"＞東京タワーの魔女を討伐したあなたの噂は裏の社会で大きく広がった/＞名声30を得た/＞ファントムから特別褒賞金が25,000円支給された"
+		MONEY += 30000
+		FLAG:名声 += 30
+		;ここでファントム占領フラグを立てる
+		ダンジョンフラグ:27:11 = 14
+		ダンジョンフラグ:27:1 = 1
+	;魔女を助けた＆メシア教を潰しに来た
+	ELSEIF ダンジョンフラグ:27:11 == 11 && イベントフラグ:49:0 == 3
+		CALL SHOW_PICTURE, "D"
+		CALL MESSAGE_WINDOW_D, "", @"＞メシア教の精鋭を返り討ちにしたあなたの評判は瞬く間に広がった/＞名声を30得た"
+		;ちょっとカオスに偏る
+		CFLAG:MASTER:秩混値 -= 16
+		FLAG:名声 += 30
+		ダンジョンフラグ:27:1 = 1
+	;魔女を助けただけだと特に何も得られない
+	ELSEIF ダンジョンフラグ:27:11 == 11
+		CALL SHOW_PICTURE, "D"
+		CALL MESSAGE_WINDOW_D, "", @"＞あなたは東京タワーの魔女に見送られながらその場を後にした……"
+		ダンジョンフラグ:27:1 = 1
+	ENDIF
+	
+;クリアフラグが立っていて、かつ東京タワー観光が終了している
+ELSEIF GETBIT(ダンジョンフラグ:27:13,5) == 0 && GETBIT(ダンジョンフラグ:27:13,4)
+	CALL SHOW_PICTURE, "D"
+	CALL MESSAGE_WINDOW_D, "華恋", "ひかりちゃん"
+	CALL MESSAGE_WINDOW_D, "ひかり", "……なに、華恋"
+	CALL MESSAGE_WINDOW_D, "華恋", "また、ここから、始めよう/また一緒に舞台をしよう/新しい私たちで、今度こそ、スタァライトの舞台に立とう！"
+	CALL MESSAGE_WINDOW_D, "ひかり", "叶わないかも、知れないのよ/舞台ばかりしているわけにもいかない/戦いの中で、取り返しのつかない目に遭うかもしれない/……あの人の気分を損ねて離れ離れにされるかもしれない"
+	CALL MESSAGE_WINDOW_D, "華恋", "ノンノン、舞台少女は日々進化中！/私たちはどんどん強くなる！　お芝居もじゃんじゃん上手になる！/それに、私たちは何度だって舞台に立つ。立たない訳がないよ。だって……"
+	CALL MESSAGE_WINDOW_D, "", "＞華恋は、僅かにほほ笑んだ/　そして凛々しい笑顔でひかりと――あなたに笑い掛けた"
+	CALL MESSAGE_WINDOW_D, "華恋", "どんなことがあったって、/舞台にかける情熱は、無くせるものじゃないんだから！"
+	CALL MESSAGE_WINDOW_D, "ひかり", "華恋……あなたは"
+	CALL MESSAGE_WINDOW_D, "華恋", "だから約束！/また、ここから始めよう/二人で一緒に、みんなで一緒に、続けよう！　舞台少女！"
+	CALL MESSAGE_WINDOW_D, "", "＞高らかな愛城華恋の宣言と、/　未だ複雑な笑みを浮かべる神楽ひかり/＞あなたは、輝き出した舞台少女を伴って、/　いつもより鮮やかに見える東京タワーを後にした……"
+
+	;ちょっとスタァライトされる
+	CFLAG:MASTER:善悪値 += 32
+	
+	LOCAL:0 = GETCHARA([[キャラ:ひかり]])
+	;だいぶスタァライトされる
+	CFLAG:(LOCAL:0):善悪値 += 64
+	
+	SETBIT ダンジョンフラグ:27:13,5
+
+ENDIF
+;=======================================================================
+;指定したマスに進入可能か
+;=======================================================================
+@CAN_ENTER_27,ARG,ARG:1
+CALL CAN_ENTER,ARG,ARG:1
+RETURN RESULT
+
+;=======================================================================
+;フロアデータ
+;=======================================================================
+@DEFINE_TILES_27, ARGS, ARG, ARG:1
+;東京タワーの外壁
+SIF ARGS == "A"
+	RETURN 10
+SIF ARGS == "B"
+	RETURN 12
+SIF ARGS == "C"
+	RETURN 22
+
+;壁	
+@TILE_MARK_COMMON_27_0, ARG, ARG:1, ARG:2
+SELECTCASE ARG
+	;東京タワーのすり抜けられないところ
+	CASE 10
+		SETCOLOR 0xff1313
+		RESULTS = ■
+	CASEELSE
+		RESULTS = ■
+ENDSELECT
+
+;扉
+@TILE_MARK_COMMON_27_2, ARG, ARG:1, ARG:2
+SELECTCASE ARG
+	;東京タワーのすり抜けられるところ（オレンジ）
+	CASE 12
+		SETCOLOR 0xff1313
+		RESULTS = ■
+	;東京タワーのすり抜けられるところ（白）
+	CASE 22
+		SETCOLOR 0xaaaaaa
+		RESULTS = ■
+	CASEELSE
+		RESULTS = 扉
+ENDSELECT
+
+
+@MAKE_FLOOR_27
+SELECTCASE FLAG:現M
+	CASE 0
+	;東京タワー周辺
+		FLAG:最大X = 19
+		FLAG:最大Y = 19
+;								           1         2
+;								 012345678901234567890
+		CALL MAKE_FLOOR_LINE,0, "       A            "
+		CALL MAKE_FLOOR_LINE,1, " 111111C11111111111 "
+		CALL MAKE_FLOOR_LINE,2, " 111111B11111  1  1 "
+		CALL MAKE_FLOOR_LINE,3, " 1  411C11111     1 "
+		CALL MAKE_FLOOR_LINE,4, " 1  11AAA1111111111 "
+		CALL MAKE_FLOOR_LINE,5, " 1111AA6AA411111111 "
+		CALL MAKE_FLOOR_LINE,6, " 1  4114111111   11 "
+		CALL MAKE_FLOOR_LINE,7, " 1  4111111111 4 11 "
+		CALL MAKE_FLOOR_LINE,8, " 111111111111111111 "
+		CALL MAKE_FLOOR_LINE,9, "       8            "
+		;1　通路
+		;2　扉
+		;3　箱
+		;4　メッセンジャー
+		;6　昇り階段
+		;7　下り怪談
+		;8　出口
+		
+	CASE 1
+	;タワービル
+		FLAG:最大X = 9
+		FLAG:最大Y = 9
+;								 012345678
+		CALL MAKE_FLOOR_LINE,0, "         "
+		CALL MAKE_FLOOR_LINE,1, " 1411123 "
+		CALL MAKE_FLOOR_LINE,2, " 11 2   "
+		CALL MAKE_FLOOR_LINE,3, "    1111"
+		CALL MAKE_FLOOR_LINE,4, " 6    17 "
+		CALL MAKE_FLOOR_LINE,5, " 1112111 "
+		CALL MAKE_FLOOR_LINE,6, " 2 2 111 "
+		CALL MAKE_FLOOR_LINE,7, " 4 4 111 "
+		CALL MAKE_FLOOR_LINE,8, "         "
+		
+	CASE 2
+	;メインデッキ
+		FLAG:最大X = 9
+		FLAG:最大Y = 9
+;								 012345678
+		CALL MAKE_FLOOR_LINE,0, "         "
+		CALL MAKE_FLOOR_LINE,1, " 141 4 6 "
+		CALL MAKE_FLOOR_LINE,2, " 111 114 "
+		CALL MAKE_FLOOR_LINE,3, " 111 333 "
+		CALL MAKE_FLOOR_LINE,4, " 7116    "
+		CALL MAKE_FLOOR_LINE,5, " 1111123 "
+		CALL MAKE_FLOOR_LINE,6, "  1      "
+		CALL MAKE_FLOOR_LINE,7, " 3111123 "
+		CALL MAKE_FLOOR_LINE,8, "         "
+	CASE 3
+	;トップデッキ
+		FLAG:最大X = 9
+		FLAG:最大Y = 9
+;								 012345678
+		CALL MAKE_FLOOR_LINE,0, "         "
+		CALL MAKE_FLOOR_LINE,1, " 3 11117 "
+		CALL MAKE_FLOOR_LINE,2, " 33 1  1 "
+		CALL MAKE_FLOOR_LINE,3, "    1  1 "
+		CALL MAKE_FLOOR_LINE,4, " T  7111 "
+		CALL MAKE_FLOOR_LINE,5, " 2 3  14 "
+		CALL MAKE_FLOOR_LINE,6, " 1 2   2 "
+		CALL MAKE_FLOOR_LINE,7, " 4211111"
+		CALL MAKE_FLOOR_LINE,8, "         "
+		
+		
+		;イベントの設置
+		;@SET_TILE,X座標, Y座標, 使用するフラグ, フラグがいくつのときにタイルを設置するか, 設置するタイル
+		;つまり、これはX座標1、Y座標7の位置に、ダンジョンフラグ:27:11が0のときのみ、IDが300番の、4（イベント）を置く
+		;この4004は マップ番号である4*1000 + タイルの種類を表す4で構成されています。
+		;CALL SET_TILE, 1 , 7 , ダンジョンフラグ:27:11 , 0 , 3014
+		
+		;魔女を助けた場合、ヘソクリ部屋解放
+		CALL SET_TILE, 1 , 3 , ダンジョンフラグ:27:11 , 11 , 3001
+		
+		;なお、ダンジョンフラグ:27:11はダンジョンフラグ:{FLAG:現ダンジョン}:11や、ダンジョンフラグ:[[ダンジョン:エコービル]]:11という記述もできます
+		;基本的には前者推奨、ダンジョンの外やほかのダンジョンからフラグを見たいときは後者もいいでしょう
+		
+		
+		
+	CASE 4
+	;いまんとこ用途なし
+		FLAG:最大X = 9
+		FLAG:最大Y = 9
+;								 012345678
+		CALL MAKE_FLOOR_LINE,0, "         "
+		CALL MAKE_FLOOR_LINE,1, " 1111111 "
+		CALL MAKE_FLOOR_LINE,2, " 1111111 "
+		CALL MAKE_FLOOR_LINE,3, " 1111111 "
+		CALL MAKE_FLOOR_LINE,4, " 1111111 "
+		CALL MAKE_FLOOR_LINE,5, " 1111111 "
+		CALL MAKE_FLOOR_LINE,6, " 1111111 "
+		CALL MAKE_FLOOR_LINE,7, " 1111111 "
+		CALL MAKE_FLOOR_LINE,8, "         "
+		
+	CASEELSE
+	;いまんとこ用途なし
+		FLAG:最大X = 9
+		FLAG:最大Y = 9
+;								 012345678
+		CALL MAKE_FLOOR_LINE,0, "         "
+		CALL MAKE_FLOOR_LINE,1, " 1111111 "
+		CALL MAKE_FLOOR_LINE,2, " 1111111 "
+		CALL MAKE_FLOOR_LINE,3, " 1111111 "
+		CALL MAKE_FLOOR_LINE,4, " 1111111 "
+		CALL MAKE_FLOOR_LINE,5, " 1111111 "
+		CALL MAKE_FLOOR_LINE,6, " 1111111 "
+		CALL MAKE_FLOOR_LINE,7, " 1111111 "
+		CALL MAKE_FLOOR_LINE,8, "         "
+
+
+ENDSELECT
+
+;=======================================================================
+;タイル調整
+;=======================================================================
+;ARG:1、ARG:2はそれぞれX座標とY座標
+;ARGはその座標に現在代入されている番号
+;0：壁　1：床もしくは通路　2：扉　3：宝箱　4：イベント　5：罠　6：上り階段 7：下り階段　8：出口　9：その他特殊処理等
+;これらの内、3～9が代入されているマスに、個別の番号を与える処理を実行します。
+;この処理を行った後、これらのマスには 「マップ番号*1000 + そのマスがそのマップで左上から数えて何個目のARGタイプのマスか*10 + ARG」が代入されます
+;例えば 2003 であった場合、「2番のマップ＝３Ｆで、左上から数えて0個目の3＝宝箱である」という事を意味しています
+;尚、0～2はどのマップにも大量に設置されるので、ここでは基本的に個別の番号を与えません。
+;
+;何個目のARGタイプのマスなのか、は左上の(0,0)から右まで探し、その後一つ下の段に移って同様に探す、というのを右下まで繰り返して数えます。
+@MAKE_FLOOR_LINE_COMMON_27, ARG, ARG:1, ARG:2
+#LOCALSIZE 10
+;LOCAL:0～9 それぞれ何個目のARGなのかを記憶しています
+;LOCAL:3 宝箱→使用フラグはダンジョンフラグ:70~74
+;指定された座標が(0,0)である場合、つまり新しいマップを読み込んだ時はLOCALを消去します
+SIF ARG:1 == 0 && ARG:2 == 0
+	VARSET LOCAL
+SELECTCASE ARG
+	CASE 3
+	
+		IF GETBIT(ダンジョンフラグ:(FLAG:現ダンジョン):(FLAG:現M+70), LOCAL:3)
+			DA:(ARG:1):(ARG:2) = 1
+		ELSE
+			DA:(ARG:1):(ARG:2) = FLAG:現M *1000 + LOCAL:3 * 10 + 3
+			LOCAL:3++
+		ENDIF
+	CASE 4 TO 9
+		DA:(ARG:1):(ARG:2) = FLAG:現M *1000 + LOCAL:ARG * 10 + ARG
+		LOCAL:ARG++
+	
+ENDSELECT
+
+
+;=======================================================================
+;特殊タイル表示
+;TILE_MARK_COMMON_{FLAG:現ダンジョン}_X
+;=======================================================================
+;ARG:1、ARG:2がX座標とY座標
+;ARGはそこに代入されている値
+;RESULTSに代入した文字がマップに表示されますが、必ず全角1文字分になるようにしてください。そうでないと表示が崩れます。
+
+;イベントタイル特殊表示
+;末尾の_4はイベントであることを示す4
+@TILE_MARK_COMMON_27_4, ARG , ARG:1 , ARG:2
+SELECTCASE ARG / 10
+	;メッセンジャーを緑色で"ｍ"と表示
+	CASE 0, 1, 2, 4, 5, 101, 102, 201, 202, 203, 205, 300, 301
+		SETCOLOR 0x00ff00
+		RESULTS = ｍ
+	CASEELSE
+		;特に設定しない場合、"！"と表示されます
+		RETURN 1
+ENDSELECT
+
+;特殊タイルの表示
+;末尾の_9は特殊タイルであることを示す9
+@TILE_MARK_COMMON_27_9, ARG , ARG:1 , ARG:2
+SELECTCASE ARG / 10
+	CASE 300
+		RESULTS = Ｔ
+	CASEELSE
+		;特に設定しない場合、"■"が表示されます
+		RETURN 1
+ENDSELECT
+
+;=======================================================================
+;[5]調べる　実行時のイベント
+;=======================================================================
+@EVENT_CHECK_DUNGEON_27
+
+;==========
+;出口の処理
+;==========
+IF DA:(FLAG:現X):(FLAG:現Y) == 8
+	CALL DUNGEON_EXIT
+	RETURN 1
+;========
+;宝の処理
+;========
+;% 10は10で割ったあまり、つまり下一桁がでてきます
+;そして、下一桁はタイルの種類を表す
+ELSEIF DA:(FLAG:現X):(FLAG:現Y) % 10 == 3
+	CALL TREASURE_27
+	RETURN RESULT
+;=======
+;階段
+;=======
+ELSEIF DA:(FLAG:現X):(FLAG:現Y) % 10 == 6
+	CALL UPSTAIRS_27
+	RETURN RESULT
+
+ELSEIF DA:(FLAG:現X):(FLAG:現Y) % 10 == 7
+	CALL DOWNSTAIRS_27
+	RETURN RESULT
+;========
+;イベント
+;========
+ELSEIF DA:(FLAG:現X):(FLAG:現Y) % 10 == 4
+	SELECTCASE DA:(FLAG:現X):(FLAG:現Y) / 10
+		;東京タワー周辺イベント
+		CASE 0
+			;個人的に乗り込んで個人的に魔女を殺した
+			IF ダンジョンフラグ:(FLAG:現ダンジョン):11 == 14
+				CALL MESSAGE_WINDOW_D, "ダークサマナー", "引継ぎは受けている、あとは任せておけ"
+			;魔女を殺し、クリアフラグが立っている
+			ELSEIF ダンジョンフラグ:(FLAG:現ダンジョン):11 == 13 && ダンジョンフラグ:(FLAG:現ダンジョン):1 > 0
+				CALL MESSAGE_WINDOW_D, "メシア教徒", "設備の搬入が大変です"
+			;魔女を殺した
+			ELSEIF ダンジョンフラグ:(FLAG:現ダンジョン):11 == 13
+				CALL MESSAGE_WINDOW_D, "男", "なんか、すげえ音がしたな/また姫様がミサイルをぶっ放したんだろうな、そうだろ？　ハハハ……"
+			;魔女と同盟
+			ELSEIF ダンジョンフラグ:(FLAG:現ダンジョン):11 == 11
+				CALL MESSAGE_WINDOW_D, "男", "おお、アンタか。姫様が会いたがってたぞ"
+			;魔女が加入
+			ELSEIF ダンジョンフラグ:(FLAG:現ダンジョン):11 == 12
+				CALL MESSAGE_WINDOW_D, "男", "姫様に変なことをするんじゃないぞ"
+			ELSE
+				;メシア教の依頼を受けた
+				IF イベントフラグ:49:0 == 1
+					CALL MESSAGE_WINDOW_D, "メシア教徒", "落ち着いてください、/我々は、あなた方を保護するために来たのです"
+					CALL MESSAGE_WINDOW_D, "男", "嘘だ！　てめえら、姫様に何をする気だ！"
+				
+				;メシア教の依頼を断って個人的に来た
+				ELSEIF イベントフラグ:49:0 == 2
+					CALL MESSAGE_WINDOW_D, "男", "ここは難民キャンプ……みたいなもんだよ/悪魔のせいで行き場のなくなった連中が、/姫様の庇護を求めて集まって来たんだ"
+				;メシア教を潰しに来た
+				ELSEIF イベントフラグ:49:0 == 3
+					CALL MESSAGE_WINDOW_D, "男", "メシア教の連中が押し入ったんだ！/あんた、お願いだ、俺たちの姫様を助けてくれ！"
+				ENDIF
+			ENDIF
+		CASE 1
+			;自主的に魔女を殺した
+			IF ダンジョンフラグ:(FLAG:現ダンジョン):11 == 14
+				CALL MESSAGE_WINDOW_D, "祈祷師", "話しかけるな/今、結界の調整をしてんのよ。手元が狂うだろ"
+			;魔女を殺し、クリアフラグが立っている
+			ELSEIF ダンジョンフラグ:(FLAG:現ダンジョン):11 == 13 && ダンジョンフラグ:(FLAG:現ダンジョン):1 > 0
+				CALL MESSAGE_WINDOW_D, "メシア教徒", "結界は順調に稼働しています/あの魔女は、まったく良いものを残してくれました。ハハハ"
+			;魔女を殺した
+			ELSEIF ダンジョンフラグ:(FLAG:現ダンジョン):11 == 13
+				CALL MESSAGE_WINDOW_D, "少年", "……あんた、何かやっただろ、クソっ"
+			;魔女と同盟
+			ELSEIF ダンジョンフラグ:(FLAG:現ダンジョン):11 == 11
+				CALL MESSAGE_WINDOW_D, "少年", "あ、ちぃーっす、姫さんは元気です/たまにミサイルが飛んでます"
+			;魔女が加入
+			ELSEIF ダンジョンフラグ:(FLAG:現ダンジョン):11 == 12
+				CALL MESSAGE_WINDOW_D, "少年", "姫さんの結界、すげーよな/本人がいなくても、勝手に動き続けるんだ/風水パワーってやつ？"
+			ELSE
+				;メシア教の依頼を受けた
+				IF イベントフラグ:49:0 == 1
+					CALL MESSAGE_WINDOW_D, "メシア教徒", "東京タワーに張られていた結界は、こちらで解除しておきました/あとは、あなたが頼りです、デビル・サマナー"
+				;メシア教の依頼を断って個人的に来た
+				ELSEIF イベントフラグ:49:0 == 2
+					CALL MESSAGE_WINDOW_D, "少年", "ここは中立地帯なんだってさ/姫さんが、誰かのお告げで守ってるんだ/カオス？　とか、ロウ？　にも染まっちゃいけないんだってさ"
+				;メシア教を潰しに来た
+				ELSEIF イベントフラグ:49:0 == 3
+					CALL MESSAGE_WINDOW_D, "少年", "ううっ……姫さんの結界が破られちまった……！"
+				ENDIF
+			ENDIF
+		CASE 2
+			;自主的に魔女を殺した
+			IF ダンジョンフラグ:(FLAG:現ダンジョン):11 == 14
+				CALL MESSAGE_WINDOW_D, "ダークサマナー", "おい、隣のキチガイ、片づけてくれよ"
+			;魔女を殺し、クリアフラグが立っている
+			ELSEIF ダンジョンフラグ:(FLAG:現ダンジョン):11 == 13 && ダンジョンフラグ:(FLAG:現ダンジョン):1 > 0
+				CALL MESSAGE_WINDOW_D, "メシア教徒", "お隣さんは、よいメシア教徒でございます/きっと神の御許へと導かれることでしょう"
+			;魔女を殺した
+			ELSEIF ダンジョンフラグ:(FLAG:現ダンジョン):11 == 13
+				CALL MESSAGE_WINDOW_D, "女", "……早く出てって"
+			;魔女と同盟
+			ELSEIF ダンジョンフラグ:(FLAG:現ダンジョン):11 == 11
+				CALL MESSAGE_WINDOW_D, "女", "最近、アンタの話ばっかりするのよ、姫様が/さっきも、無駄にイルミネーションとか作ってたし/ぜったいハイになってるわアレ"
+			;魔女が加入
+			ELSEIF ダンジョンフラグ:(FLAG:現ダンジョン):11 == 12
+				CALL MESSAGE_WINDOW_D, "女", "あっ、どろぼう猫！　よくも姫様を盗ったわね！/わたし好きだったのに"
+			ELSE
+				;メシア教の依頼を受けた
+				IF イベントフラグ:49:0 == 1
+					CALL MESSAGE_WINDOW_D, "メシア教徒", "反抗的な者は後方に送っておきました/あなたは早く魔女の身柄を！"
+				;メシア教の依頼を断って個人的に来た
+				ELSEIF イベントフラグ:49:0 == 2
+					CALL MESSAGE_WINDOW_D, "女", "姫様は強いのよ/この間も悪魔に、出合い頭にミサイルを叩きこんでいたわ"
+				;メシア教を潰しに来た
+				ELSEIF イベントフラグ:49:0 == 3
+					CALL MESSAGE_WINDOW_D, "女", "あんたも姫様を狙ってきたのか！？/ちくしょう、帰れ！"
+				ENDIF
+			ENDIF
+		CASE 4
+			;自主的に魔女を殺した
+			IF ダンジョンフラグ:(FLAG:現ダンジョン):11 == 14
+				CALL MESSAGE_WINDOW_D, "女", "みんな死ぬのよ！　破滅が来るのよ！/誰も逆らえない、逆らえないわ、アハハ"
+			;魔女を殺し、クリアフラグが立っている
+			ELSEIF ダンジョンフラグ:(FLAG:現ダンジョン):11 == 13 && ダンジョンフラグ:(FLAG:現ダンジョン):1 > 0
+				CALL MESSAGE_WINDOW_D, "メシア教徒", "魔女は神に逆らったから死んだのよ/魔女は弱くて愚かだったの、神の愛を知らなかったから/私があの子の魂を救ってあげなくちゃ……"
+			;魔女を殺した
+			ELSEIF ダンジョンフラグ:(FLAG:現ダンジョン):11 == 13
+				CALL MESSAGE_WINDOW_D, "女", "ねえ、なんでアンタ、ミサイルの臭いがするの？/姫様に追い返されたんでしょ？　ねえ？/そんなに血まみれなんだもの、ねえ！"
+			;魔女と同盟
+			ELSEIF ダンジョンフラグ:(FLAG:現ダンジョン):11 == 11
+				CALL MESSAGE_WINDOW_D, "女", "なんでアンタみたいなのが姫様の周りをうろちょろしてんのよ"
+			;魔女が加入
+			ELSEIF ダンジョンフラグ:(FLAG:現ダンジョン):11 == 12
+				CALL MESSAGE_WINDOW_D, "女", "姫様に誤射されてない？/アハハ、冗談じゃなくて、マジのマジよ/結構見境ないんだから、あの子……"
+			ELSE
+				;メシア教の依頼を受けた
+				IF イベントフラグ:49:0 == 1
+					CALL MESSAGE_WINDOW_D, "女", "今に姫様が、姫様があんたたちを皆殺しにしてくれる……"
+				;メシア教の依頼を断って個人的に来た
+				ELSEIF イベントフラグ:49:0 == 2
+					CALL MESSAGE_WINDOW_D, "女", "あなたも姫様に戦いを？/アハハ！　体力には気を付けなさい、開幕ミサイルでごっそり持っていかれるわよ！"
+				;メシア教を潰しに来た
+				ELSEIF イベントフラグ:49:0 == 3
+					CALL MESSAGE_WINDOW_D, "女", "ううっ、畜生、撃たれた/天使がアタシを撃ちやがった……"
+				ENDIF
+			ENDIF
+		CASE 5
+			;自主的に魔女を殺した
+			IF ダンジョンフラグ:(FLAG:現ダンジョン):11 == 14
+				CALL MESSAGE_WINDOW_D, "ダークサマナー", "ガラクタばかりで、掃除が大変だよ"
+			;魔女を殺し、クリアフラグが立っている
+			ELSEIF ダンジョンフラグ:(FLAG:現ダンジョン):11 == 13 && ダンジョンフラグ:(FLAG:現ダンジョン):1 > 0
+				CALL MESSAGE_WINDOW_D, "メシア教徒", "ここに居た子達は、安全な教会に送ったわ。心配しないでね"
+			;魔女を殺した
+			ELSEIF ダンジョンフラグ:(FLAG:現ダンジョン):11 == 13
+				CALL MESSAGE_WINDOW_D, "子供たち", "大きな音がしたんだ、怖い、怖いよ"
+			;魔女と同盟
+			ELSEIF ダンジョンフラグ:(FLAG:現ダンジョン):11 == 11
+				CALL MESSAGE_WINDOW_D, "子供たち", "あ、このあいだの人だ、なんかちょーだい"
+			;魔女が加入
+			ELSEIF ダンジョンフラグ:(FLAG:現ダンジョン):11 == 12
+				CALL MESSAGE_WINDOW_D, "子供たち", "最近姫様があんまり来てくれないの/あなたは一緒に居るの？　恋人なの？"
+			ELSE
+				;メシア教の依頼を受けた
+				IF イベントフラグ:49:0 == 1
+					CALL MESSAGE_WINDOW_D, "メシア教", "ここには子供たちが寄り集まって生活しているみたい/巻き込まれないように助けてあげなくちゃ……"
+				;メシア教の依頼を断って個人的に来た
+				ELSEIF イベントフラグ:49:0 == 2
+					CALL MESSAGE_WINDOW_D, "子供たち", "姫様、好きー！/お腹空いたときは、食べ物を分けてくれるんだ！"
+				;メシア教を潰しに来た
+				ELSEIF イベントフラグ:49:0 == 3
+					CALL MESSAGE_WINDOW_D, "子供たち", "玄関は開けないよ！/誰が来ても開けちゃダメって、言われたもの！"
+				ENDIF
+			ENDIF
+		;メインデッキイベント
+		CASE 201
+			;ほとんど隠しキャラ
+			;限られたタイミング＆選択肢でしか仲間にならない
+			;
+			;魔女を殺したあと、クリアフラグが立った
+			IF ダンジョンフラグ:27:12
+				CALL MESSAGE_WINDOW_D, "", "＞もう誰もいない"
+			ELSEIF ダンジョンフラグ:27:1 && (ダンジョンフラグ:(FLAG:現ダンジョン):11 == 14 || ダンジョンフラグ:(FLAG:現ダンジョン):11 == 13)
+				CALL MESSAGE_WINDOW_D, "", "＞生活感はあるが、誰もいない"
+			;魔女を殺したあと、クリアフラグが立つ前に突入した
+			ELSE
+				;EXイベントなしorネットワーク系イベント不許可
+				IF GETBIT(FLAG:EXTRAイベント設定, 0) == 0 || GETBIT(FLAG:EXTRAイベントフィルタ, 9) == 1
+					CALL MESSAGE_WINDOW_D, "", "＞生活感はあるが、誰もいない"
+				ELSE
+					CALL MESSAGE_WINDOW_D, "", "＞小柄な影が、粗末なベッドの上にうずくまっている……/＞子供か？/＞暗がりに居るせいでよく見えない"
+					CALL INPUT_SELECT_D, "[0]見なかったことにする/[1]明かりで照らす"
+					IF RESULT == 1
+						CALL MESSAGE_WINDOW_D, "", "＞あなたは子供を光で照らした"
+						CALL MESSAGE_WINDOW_D, "子供", "……？"
+						CALL MESSAGE_WINDOW_D, "", "＞ああ、恐らくは女児/＞歳のころは10に満たない程度か"
+						CALL MESSAGE_WINDOW_D, "", "＞粗末な袖のないワンピースだけを着て、/＞やや癖のある長いブロンドの髪を垂らしている"
+						CALL MESSAGE_WINDOW_D, "", "＞そして、顔の左半分が……抉れていた"
+						CALL MESSAGE_WINDOW_D, "子供", "……"
+						CALL MESSAGE_WINDOW_D, "", "＞ちょうど、卵の殻でも剥いたみたいに/＞子供は、顔の左半分が抉れていた"
+						CALL MESSAGE_WINDOW_D, "", "＞本来、愛らしい視線があるべきところを中心に、鋼のパーツが露出している/＞カメラ・アイと思しき部分が、赤や緑に、蛍のように明滅している/＞腕や足も鋼の色がはみ出していた/＞耳を澄ますと、金属のすれる音が、聞こえていた"
+						CALL MESSAGE_WINDOW_D, "", "＞マシン種かとも思ったが/＞体臭は、幼い子供のそれであり、/＞傍らの便器の中には、コールタールのような便が溜まっていた"
+						CALL MESSAGE_WINDOW_D, "子供", "……"
+						CALL MESSAGE_WINDOW_D, "", "＞子供は憂鬱そうな顔であなたを見ている"
+						CALL INPUT_SELECT_D, "お見合いしてても仕方がない、どうする？/[0]見なかったことにする/[1]持ち帰る"
+						IF RESULT == 1
+							CALL MESSAGE_WINDOW_D, "", "＞わざわざ魔女が匿っていた人間だ、持って帰って損にはなるまい"
+							CALL MESSAGE_WINDOW_D, "", "＞あなたは子供にコンタクトを取り、双方に敵意が無いことを確認すると、/＞その鋼の手を引いてベッドの上から連れ出した"
+							CALL MESSAGE_WINDOW_D, "", "＞ばさっ/＞何かが落ちた"
+							CALL MESSAGE_WINDOW_D, "", "＞この冊子は……取説か？"
+							CALL MESSAGE_WINDOW_D, "", "＞オブジェクト　SCP-191　が仲魔になった"
+							CALL ADD_NEW_COMPANION,[[キャラ:SCP-191]],0
+							SIF RESULT == 1
+								CFLAG:(RESULT:1):戦闘参加不可能 = -1
+							ダンジョンフラグ:27:12 = 1
+						ELSE
+							CALL MESSAGE_WINDOW_D, "", "＞あなたは視線を外さないよう気を付けながら後ずさって離れた……"
+						ENDIF
+					ELSE
+						CALL MESSAGE_WINDOW_D, "", "＞あなたは視線を外さないよう気を付けながら後ずさって離れた……"
+					ENDIF
+					
+					
+				ENDIF
+			ENDIF
+		;トップデッキイベント
+		CASE 300
+			;自主的に魔女を殺した
+			IF ダンジョンフラグ:(FLAG:現ダンジョン):11 == 14
+				CALL MESSAGE_WINDOW_D, "メカニック", "こら！　そこを跨ぐな！/まったく……電霊を流すケーブルは踏むなよ、呪われるぞ"
+			;魔女を殺し、クリアフラグが立っている
+			ELSEIF ダンジョンフラグ:(FLAG:現ダンジョン):11 == 13 && ダンジョンフラグ:(FLAG:現ダンジョン):1 > 0
+				CALL MESSAGE_WINDOW_D, "メシア教徒", "もう我々の放送は御覧になられましたか？/いかがでしょう、信仰心が伝わりますか？"
+			;魔女を殺した
+			ELSEIF ダンジョンフラグ:(FLAG:現ダンジョン):11 == 13
+				CALL MESSAGE_WINDOW_D, "老婆", "デビルサマナーに呪いあれ！"
+			;魔女と同盟
+			ELSEIF ダンジョンフラグ:(FLAG:現ダンジョン):11 == 11
+				CALL MESSAGE_WINDOW_D, "老婆", "姫様に粗相のないようにするのだぞ"
+			;魔女が加入
+			ELSEIF ダンジョンフラグ:(FLAG:現ダンジョン):11 == 12
+				CALL MESSAGE_WINDOW_D, "老婆", "お前が姫様を守るのだぞ"
+			ELSE
+				;メシア教の依頼を受けた
+				IF イベントフラグ:49:0 == 1
+					CALL MESSAGE_WINDOW_D, "老婆", "ぐおお、こ、腰が……。/なんじゃ貴様、姫様には指一本触れさせぬぞ/消え失せーい！　消え失せ－い！"
+				;メシア教の依頼を断って個人的に来た
+				ELSEIF イベントフラグ:49:0 == 2
+					CALL MESSAGE_WINDOW_D, "老婆", "おのれダークサマナー風情が、姫様には指一本触れさせぬぞ/消え失せーい！　消え失せ－い！"
+				;メシア教を潰しに来た
+				ELSEIF イベントフラグ:49:0 == 3
+					CALL MESSAGE_WINDOW_D, "老婆", "ぐおお、こ、腰が……。/なんじゃ貴様、姫様には指一本触れさせぬぞ/消え失せーい！　消え失せ－い！"
+				ENDIF
+			ENDIF
+	ENDSELECT
+ELSE
+	CALL MESSAGE_WINDOW_D, "", "＞何も無いようだ"
+	RETURN 0
+ENDIF
+
+;=======================================================================
+;タイル進入時のイベント
+;=======================================================================
+@EVENT_ENTER_DUNGEON_27,ARG
+;ARG = 進入時の向き　0の場合ワープなど
+;==========
+;出口の処理
+;==========
+IF DA:(FLAG:現X):(FLAG:現Y) % 10 == 8
+	CALL DUNGEON_EXIT
+	RETURN 1
+;========
+;宝の処理
+;========
+ELSEIF DA:(FLAG:現X):(FLAG:現Y) % 10 == 3
+	CALL TREASURE_27
+	RETURN RESULT
+;=======
+;階段
+;=======
+ELSEIF DA:(FLAG:現X):(FLAG:現Y) % 10 == 6
+	;水族館を見たあと、土産物屋に行っていない、かつ現Mが1
+	IF GETBIT(ダンジョンフラグ:27:13,2) == 0 && GETBIT(ダンジョンフラグ:27:13,1) && GETBIT(ダンジョンフラグ:27:13,1) && ダンジョンフラグ:27:1 && FINDCHARA_B([[キャラ:華恋]]) == 2 && FINDCHARA_B([[キャラ:ひかり]]) == 2 && FLAG:現M == 1
+		CALL MESSAGE_WINDOW_D, "華恋", "ひかりちゃあん……"
+		CALL MESSAGE_WINDOW_D, "ひかり", "……すみません、華恋、お土産屋も気になるみたいです/この階のどこかにあると思います"
+		FLAG:現Y = 5
+	;土産物屋を見たあと、展望台に行っていない、かつ現Mが2
+	ELSEIF GETBIT(ダンジョンフラグ:27:13,3) == 0 && GETBIT(ダンジョンフラグ:27:13,2) && GETBIT(ダンジョンフラグ:27:13,1) && ダンジョンフラグ:27:1 && FINDCHARA_B([[キャラ:華恋]]) == 2 && FINDCHARA_B([[キャラ:ひかり]]) == 2 && FLAG:現M == 2
+		CALL MESSAGE_WINDOW_D, "華恋", "展望台……"
+		CALL MESSAGE_WINDOW_D, "ひかり", "物欲しげな顔で見ないで"
+		FLAG:現X = 3
+	ELSE
+		CALL UPSTAIRS_27
+	ENDIF
+	RETURN RESULT
+
+ELSEIF DA:(FLAG:現X):(FLAG:現Y) % 10 == 7
+	;水族館を見たあと、土産物屋に行っていない、かつ現Mが1
+	IF GETBIT(ダンジョンフラグ:27:13,2) == 0 && GETBIT(ダンジョンフラグ:27:13,1) && GETBIT(ダンジョンフラグ:27:13,1) && ダンジョンフラグ:27:1 && FINDCHARA_B([[キャラ:華恋]]) == 2 && FINDCHARA_B([[キャラ:ひかり]]) == 2 && FLAG:現M == 1
+		CALL MESSAGE_WINDOW_D, "華恋", "ひかりちゃあん……"
+		CALL MESSAGE_WINDOW_D, "ひかり", "……すみません、華恋、お土産屋も気になるみたいです/この階のどこかにあると思います"
+		FLAG:現Y = 5
+	;土産物屋を見たあと、展望台に行っていない、かつ現Mが1
+	ELSEIF GETBIT(ダンジョンフラグ:27:13,3) == 0 && GETBIT(ダンジョンフラグ:27:13,2) && GETBIT(ダンジョンフラグ:27:13,1) && ダンジョンフラグ:27:1 && FINDCHARA_B([[キャラ:華恋]]) == 2 && FINDCHARA_B([[キャラ:ひかり]]) == 2 && FLAG:現M == 1
+		CALL MESSAGE_WINDOW_D, "華恋", "展望台……"
+		CALL MESSAGE_WINDOW_D, "ひかり", "物欲しげな顔で見ないで"
+		FLAG:現X = 6
+	;土産物屋を見たあと、展望台に行っていない、かつ現Mが2
+	ELSEIF GETBIT(ダンジョンフラグ:27:13,3) == 0 && GETBIT(ダンジョンフラグ:27:13,2) && GETBIT(ダンジョンフラグ:27:13,1) && ダンジョンフラグ:27:1 && FINDCHARA_B([[キャラ:華恋]]) == 2 && FINDCHARA_B([[キャラ:ひかり]]) == 2 && FLAG:現M == 2
+		CALL MESSAGE_WINDOW_D, "華恋", "展望台……"
+		CALL MESSAGE_WINDOW_D, "ひかり", "物欲しげな顔で見ないで"
+		FLAG:現Y = 3
+	ELSE
+		CALL DOWNSTAIRS_27
+	ENDIF
+	RETURN RESULT
+
+;==========
+;扉の処理
+;==========
+ELSEIF DA:(FLAG:現X):(FLAG:現Y) % 10 == 2
+	CALL DUNGEON_DOOR,ARG
+	RETURN 1
+
+
+;========================
+;イベント
+;========================
+ELSEIF DA:(FLAG:現X):(FLAG:現Y) % 10 == 4
+	SELECTCASE DA:(FLAG:現X):(FLAG:現Y) /10
+		;東京タワー周辺イベント
+		CASE 1
+			RETURN 0
+		CASE 3
+			;個人的に来た場合はクリアフラグを立てるまで結界を自力突破する必要有り
+			IF イベントフラグ:49:0 == 2 && ダンジョンフラグ:27:1 < 1
+				
+				CALL INPUT_SELECT_D, "特殊な結界が張られている……突破には全員のＨＰ・ＭＰを半分捧げる必要がある/[0]突入する /[1]引き下がる"
+				IF RESULT == 0
+					;自軍ＨＰ・ＭＰ半減
+					FOR LOCAL,1,7
+						IF POS(LOCAL) > -1 && GET_STATE(CFLAG:(POS(LOCAL)):ステート) != "DYING"
+							PRINTFORML [{LOCAL}] %CALLNAME:POS(LOCAL)%　>>>>>>　{MAXBASE:(POS(LOCAL)):ＨＰ*50/100}ダメージ
+							CALL VAR_HP,POS(LOCAL),-MAXBASE:(POS(LOCAL)):ＨＰ*50/100
+							PRINTFORML [{LOCAL}] %CALLNAME:POS(LOCAL)%　>>>>>>　{MAXBASE:(POS(LOCAL)):ＭＰ*50/100}ダメージ
+							CALL VAR_MP,POS(LOCAL),-MAXBASE:(POS(LOCAL)):ＭＰ*50/100
+						ENDIF
+					NEXT
+					PRINTFORMW あなたは力づくで結界を抉じ開けた
+					
+				ELSEIF RESULT == 1
+					FLAG:現X = 7
+					;上から来た
+					IF ARG == 2
+						FLAG:現Y -= 1
+					;それ以外
+					ELSE
+						FLAG:現Y += 1
+					ENDIF
+					
+				ENDIF
+			ELSE
+				CALL MESSAGE_WINDOW_D, "", "結界が弱まっている……/あなたは何事もなく障壁を通り抜けた"
+			ENDIF
+		;タワービルイベント
+		CASE 100
+			;クリアフラグが立っていて、かつ、かれひかセット
+			;かれひか観光フラグ・水族館が立ってない
+			IF GETBIT(ダンジョンフラグ:27:13,1) == 0 && ダンジョンフラグ:27:1 && FINDCHARA_B([[キャラ:華恋]]) == 2 && FINDCHARA_B([[キャラ:ひかり]]) == 2
+				CALL MESSAGE_WINDOW_D, "", "＞東京タワー水族館……と看板はある"
+				CALL MESSAGE_WINDOW_D, "華恋", "ここ、が？"
+				CALL MESSAGE_WINDOW_D, "", "＞だが、そこは真っ暗だ/＞空調の止まった部屋は埃っぽく、どことなく生臭い/＞死人のような空気が、部屋一杯に漂っていた"
+				CALL MESSAGE_WINDOW_D, "華恋", "あはは、やってない、ね……"
+				CALL MESSAGE_WINDOW_D, "", "＞華恋は、室内を見渡した"
+				CALL MESSAGE_WINDOW_D, "ひかり", "残念だけど、分かり切ってたこと"
+				CALL MESSAGE_WINDOW_D, "華恋", "そう、だね"
+				CALL MESSAGE_WINDOW_D, "ひかり", "私たちはもう、違う世界に来てしまった/もう、あの世界には、戻れない/もう、あの舞台には/……立てない"
+				CALL MESSAGE_WINDOW_D, "", "＞華恋は、驚いた顔でひかりを見た/＞そして真剣な顔で、彼女の目を見つめた"
+				CALL MESSAGE_WINDOW_D, "華恋", "違う、違うよ、それは違う/ここがどこだって、私が誰だって、関係ないよ"
+				CALL MESSAGE_WINDOW_D, "ひかり", "現実を見て……！/もう、私たちは、人間じゃない、舞台には立てない！/わがままを言わないで、この人を困らせないで/お願いだから、もう、大人になって"
+				CALL MESSAGE_WINDOW_D, "", "＞ひかりはしばらく華恋を睨んだあと、踵を返して部屋を出た"
+				CALL MESSAGE_WINDOW_D, "華恋", "ひかりちゃん、どうして？/どうしてそんなこと言うの？"
+				CALL MESSAGE_WINDOW_D, "", "＞華恋はひかりを追った/＞途中、一瞬だけ水族館の跡地を悲しそうな目で振り返ったあと/＞先に出たひかりの背中を追っていった"
+				SETBIT ダンジョンフラグ:27:13,1
+				
+			;クリアフラグ立ってない
+			ELSEIF ダンジョンフラグ:27:1 == 0
+				CALL MESSAGE_WINDOW_D, "", "＞東京タワー水族館……と看板はある"
+				CALL MESSAGE_WINDOW_D, "", "＞しかし、今は悪魔がたむろっているようだ/＞意味もなく近寄るのはやめておこう……"
+				FLAG:現X = 3
+				FLAG:現Y = 1
+				
+			ELSEIF GETBIT(ダンジョンフラグ:27:13,1) == 0 && ダンジョンフラグ:27:1 && FINDCHARA_B([[キャラ:華恋]]) == 2
+				CALL MESSAGE_WINDOW_D, "", "＞東京タワー水族館……と看板はある"
+				CALL MESSAGE_WINDOW_D, "華恋", "は、入れない……"
+				CALL MESSAGE_WINDOW_D, "", "＞しかし、今日に限って、大量の悪魔がたむろしている/＞これを抉じ開けるのは難しい……"
+				FLAG:現X = 3
+				FLAG:現Y = 1
+			ELSEIF GETBIT(ダンジョンフラグ:27:13,1) == 0 && ダンジョンフラグ:27:1 && FINDCHARA_B([[キャラ:ひかり]]) == 2
+				CALL MESSAGE_WINDOW_D, "", "＞東京タワー水族館……と看板はある"
+				CALL MESSAGE_WINDOW_D, "ひかり", "……みえない"
+				CALL MESSAGE_WINDOW_D, "", "＞しかし、今日に限って、大量の悪魔がたむろしている/＞これを抉じ開けるのは難しい……"
+				FLAG:現X = 3
+				FLAG:現Y = 1
+			ELSE
+				CALL MESSAGE_WINDOW_D, "", "＞東京タワー水族館……と看板はあるが、水槽は空っぽだ/この部屋には何もない"
+			ENDIF
+		CASE 101
+			;クリアフラグが立っていて、かつ、かれひかセット
+			;かれひか観光フラグ・水族館が立っていて、観光フラグ・売店が立ってない
+			IF GETBIT(ダンジョンフラグ:27:13,2) == 0 && GETBIT(ダンジョンフラグ:27:13,1) && ダンジョンフラグ:27:1 && FINDCHARA_B([[キャラ:華恋]]) == 2 && FINDCHARA_B([[キャラ:ひかり]]) == 2
+				CALL MESSAGE_WINDOW_D, "ジャックフロスト", "ヒーホー！　東京タワー土産はどうだい！/今ならこの……あれ？　なんか雰囲気暗いね？　どったの？"
+				CALL MESSAGE_WINDOW_D, "", "＞店員ごっこをしているジャックフロストが、/＞眉根を寄せて、愛城華恋を見上げている"
+				CALL MESSAGE_WINDOW_D, "華恋", "あ、ヒーホーくんだ/ここって……？"
+				CALL MESSAGE_WINDOW_D, "ジャックフロスト", "ここは売店！　オイラの売店！/ニンゲンが残したよく分からないものを売ってるんだホ！"
+				CALL MESSAGE_WINDOW_D, "ジャックランタン", "見つけたのオレだぞ"
+				CALL MESSAGE_WINDOW_D, "", "＞照明係を兼ねているジャックランタンが鼻をほじりながら言った"
+				CALL MESSAGE_WINDOW_D, "ジャックフロスト", "でも客が来ないんだホー"
+				CALL MESSAGE_WINDOW_D, "ジャックランタン", "来る訳ねえだろこんなとこ"
+				
+				;ジャックフロストをスタァライトしてる
+				IF GETBIT(イベントフラグ:93:1, 20)
+					CALL MESSAGE_WINDOW_D, "", "＞不意に、ジャックフロストが動きを止めた/＞顎に手を当て、確かめるような目で華恋を見つめる"
+					CALL MESSAGE_WINDOW_D, "華恋", "どうしたの？"
+					CALL MESSAGE_WINDOW_D, "ジャックフロスト", "んー？/もしかして、キミ……/あの有名な“スタァライト”ちゃん？"
+					CALL MESSAGE_WINDOW_D, "ひかり", "は？"
+					CALL MESSAGE_WINDOW_D, "華恋", "スタァライト……ちゃん……？"
+					CALL MESSAGE_WINDOW_D, "", "＞華恋とひかりは少し考えたあと、/「あー！」と大きな声を上げた"
+					CALL MESSAGE_WINDOW_D, "ひかり", "あのときの、ジャックフロストの帽子のサイン！"
+					CALL MESSAGE_WINDOW_D, "華恋", "確かに私、スタァライトしちゃいますって、書いた！"
+					CALL MESSAGE_WINDOW_D, "ジャックランタン", "え、マジ？/これがあの、お前ら３００人をまとめてダンスで負かしたっていう、/伝説のスタァライトちゃん？"
+					CALL MESSAGE_WINDOW_D, "ジャックフロスト", "マジマジ、マジだホ！/オイラたち３００人をまとめてダンスで蹴散らした……/伝説のスタァライトちゃん！"
+					CALL MESSAGE_WINDOW_D, "華恋", "（どうしようひかりちゃん、話が大きくなってるよ……）"
+					CALL MESSAGE_WINDOW_D, "ひかり", "（だ、大丈夫、大丈夫よ/　私が守るって決めたもの/　何があっても大丈夫よ……！）"
+					CALL MESSAGE_WINDOW_D, "ジャックフロスト", "天下のスタァライトちゃんなら、今日のお代はサービスするホー！/好きなの何でも、プレゼントしちゃうホ！/そ・の・代・わ・り、オイラにもサインちょーだいネ"
+					CALL MESSAGE_WINDOW_D, "ジャックランタン", "おいおい、オレもだ！　オレも！/オレの帽子の、この白いところによろしくな！"
+					CALL MESSAGE_WINDOW_D, "", "＞２人は纏わりついて来る２体の妖精にいろいろ勧められながら/＞店内をぐるりと一周した"
+					CALL MESSAGE_WINDOW_D, "華恋", "ひかりちゃん、私、これがいいな"
+					CALL MESSAGE_WINDOW_D, "ひかり", "９色の東京タワー……/華恋、あなた"
+					CALL MESSAGE_WINDOW_D, "華恋", "お土産だよ、/私たち、みんなへの"
+					CALL MESSAGE_WINDOW_D, "", "＞華恋は９つの小さな東京タワーを抱えたあと、/＞代金がわりに、彼らの帽子へサインをしてあげた……"
+					CALL MESSAGE_WINDOW_D, "ジャックランタン", "へっへっへ、オレもスタァライトされちまった"
+					CALL MESSAGE_WINDOW_D, "ジャックフロスト", "オイラもみんなに自慢しよーっと/あ、そうだ、展望台も、一か所だけなら開いてるホ/思い出作りに昇ってくるといいホー"
+					CALL MESSAGE_WINDOW_D, "華恋", "ありがとう！"
+					CALL MESSAGE_WINDOW_D, "ひかり", "（ジャックフロスト……かわいい……）"
+					CALL MESSAGE_WINDOW_D, "", "＞あなたたちは、陽気な悪魔に見送られながらその場を後にした……"
+				ELSE
+					CALL MESSAGE_WINDOW_D, "", "＞ジャックランタンの一言に、華恋がニッと歯を見せた"
+					CALL MESSAGE_WINDOW_D, "華恋", "じゃあ、私たちが初めてのお客さんだね！"
+					CALL MESSAGE_WINDOW_D, "ジャックフロスト", "……あっ、お客さん？/お姉ちゃんたち、お客さん！？/は、初めてとは失礼な！　ひ・さ・し・ぶ・り！　久しぶりホー！"
+					CALL MESSAGE_WINDOW_D, "華恋", "何を売ってるの？"
+					CALL MESSAGE_WINDOW_D, "ジャックフロスト", "なんかこの三角のペラペラ……"
+					CALL MESSAGE_WINDOW_D, "ジャックランタン", "バカ、それ以外もあるだろ/おいオマエ、着いてきな、在庫はたらふく用意してあるぜ"
+					CALL MESSAGE_WINDOW_D, "華恋", "わーい"
+					CALL MESSAGE_WINDOW_D, "ひかり", "……止めなくて、良いんですか"
+					CALL MESSAGE_WINDOW_D, "", "＞あの連中なら敵意が無いと分かっている/＞あなたは、ひかりも売店を見て回るように促した"
+					CALL MESSAGE_WINDOW_D, "華恋", "カニハニワ、無いねー"
+					CALL MESSAGE_WINDOW_D, "ひかり", "ミスターホワイトも、スズダルキャットも……無い、ね"
+					CALL MESSAGE_WINDOW_D, "華恋", "見たことない子ばっかりだね"
+					CALL MESSAGE_WINDOW_D, "ひかり", "知らないキャラクター、ばっかり、だね"
+					CALL MESSAGE_WINDOW_D, "", "＞２人は少し複雑な顔をしていた/＞嬉しそうな悪魔たちを気遣ってか、口元こそは微笑んでいたが/＞視線は沈んでいた"
+					CALL MESSAGE_WINDOW_D, "", "＞………………/＞…………/＞……"
+					CALL MESSAGE_WINDOW_D, "華恋", "あ……！"
+					CALL MESSAGE_WINDOW_D, "", "＞華恋が、パッと細い指を棚に向けた"
+					CALL MESSAGE_WINDOW_D, "", "＞小さな東京タワーの置物だ/＞大きさは三十センチにも満たない、/＞しかし、色とりどりの、金属製の東京タワーだ"
+					CALL MESSAGE_WINDOW_D, "華恋", "ひかりちゃん、私、これがいいな"
+					CALL MESSAGE_WINDOW_D, "ひかり", "９色の東京タワー……/華恋、あなた"
+					CALL MESSAGE_WINDOW_D, "華恋", "お土産だよ、/私たち、みんなへの"
+					CALL MESSAGE_WINDOW_D, "", "＞ひかりは複雑な顔をしていたが、/＞華恋は真剣な顔で、９色の東京タワーを、胸に抱きしめた"
+					CALL MESSAGE_WINDOW_D, "", "＞………………/＞…………/＞……"
+					CALL MESSAGE_WINDOW_D, "ジャックフロスト", "まいどありー！"
+					CALL MESSAGE_WINDOW_D, "", "＞なお、愛城華恋は日本円しか持っていなかったので、/＞魔貨は個人的なポケットマネーで立て替えた"
+					CALL MESSAGE_WINDOW_D, "ひかり", "すみません！　すみません！"
+					CALL MESSAGE_WINDOW_D, "華恋", "あ、ありがとうございます/いやー、まさか普通のお金でお買い物できないなんて、あははー"
+					CALL MESSAGE_WINDOW_D, "ひかり", "華恋！！！！！"
+					CALL MESSAGE_WINDOW_D, "華恋", "ごめんなさい……"
+					CALL MESSAGE_WINDOW_D, "", "＞ジャックフロストいわく、展望台も１か所だけは使えるようになっているらしい/＞華恋は上の階に行こうとねだっている……"
+					
+				ENDIF
+				SETBIT ダンジョンフラグ:27:13,2
+				
+			;東京タワーシリーズ……もとい、暁シリーズの販売を行う
+			ELSEIF GETBIT(ダンジョンフラグ:27:13,2)
+				CALL MESSAGE_WINDOW_D, "ジャックフロスト", "ヒーホー！　また来るなんて嬉しいね！/どう？　どう？　何か買っていかない？"
+			ELSE
+				CALL MESSAGE_WINDOW_D, "ジャックフロスト", "ヒーホー！　そこの人間、東京タワー土産はどうだい！/木刀、お水……東京タワーソード！/オイラが集めたよく分からないものを売ってやるホー！"
+			ENDIF
+				
+			;03から始まってるのは前にやろうとした何かの痕跡です、ｷﾆｼﾅｲ
+			$TTJB_SHOP_00_03
+			CALL INPUT_SELECT_D, "どうする？//[1]商品を見る/[2]ステイタスを見る///[0]外に出る" , , , 2
+			IF RESULT == 1
+				$TTJB_SHOP_00_04
+				PRINTL どれがいいホ？
+				PRINTL 
+				PRINTL 所持金
+				PRINT ￥　　
+				PRINTV MONEY
+				PRINTL 
+				PRINT 魔貨　
+				PRINTV MONEY:1
+				PRINTL 
+				PRINTL 
+				;檜の木剣　　　　　非売品（ミシャグジさまのレアドロ。この時期では型落ち）
+				;真紅の長巻　　　　非売品（参考：競合品　加州清光　￥68000）
+				;暁の鎧　　　　　￥113000
+				;暁の兜　　　　　￥50000
+				;暁の篭手　　　　￥34000
+				;暁の具足　　　　￥34000
+				;耐破魔のリング　　1500マッカ
+				;アムリタソーダ　　 500マッカ
+				IF GETBIT(ダンジョンフラグ:27:14, 1) < 1
+					PRINTL [0]お土産の定番、『木刀』だホ　　　　　　　　　　　一本目は特価だホ！　（　 1マッカ）｜現品限り！
+				ELSE
+					PRINTL [0]お土産の定番、『木刀』だホ　　　　　　　　　　　　　　　　　　　　　（　 7マッカ）｜いっぱいあるホ
+				ENDIF
+					PRINTL [1]真っ赤でカッコイイ『東京タワーソード』だホ！　　LV35の女の子向け！　（1200マッカ）｜いっぱいあるホ
+				SIF GETBIT(ダンジョンフラグ:27:14, 2) < 1
+					PRINTL [2]真っ赤でカッコイイ『東京タワーヘルメット』だホ！LV40の女の子向け！　（ 550マッカ）｜現品限り！
+				SIF GETBIT(ダンジョンフラグ:27:14, 3) < 1
+					PRINTL [3]真っ赤でカッコイイ『東京タワーアーマー』だホ！　LV40の女の子向け！　（1200マッカ）｜現品限り！
+				SIF GETBIT(ダンジョンフラグ:27:14, 4) < 1
+					PRINTL [4]真っ赤でカッコイイ『東京タワーアーム』だホ！　　LV40の女の子向け！　（ 400マッカ）｜現品限り！
+				SIF GETBIT(ダンジョンフラグ:27:14, 5) < 1
+					PRINTL [5]真っ赤でカッコイイ『東京タワーながぐつ』だホ！　LV40の女の子向け！　（ 400マッカ）｜現品限り！
+				SIF GETBIT(ダンジョンフラグ:27:14, 6) < 1
+					PRINTL [6]『すっごい指輪』だホ！　でも破魔耐性だから人間が買ってくれないホ…　（ 　10000円）｜現品限り。こんなもん円でいいホ（激怒）
+					PRINTL [7]『東京タワー水』だホ！　アムリ……なんとか！　　　　　　　　　　　　（ 550マッカ）｜いっぱいあるホ
+					PRINTL 
+					PRINTL [9]※外に出る
+				$TTJB_SHOP_00_05
+				INPUT
+				;お土産の木刀
+				IF RESULT == 0
+					;初回購入
+					IF GETBIT(ダンジョンフラグ:27:14, 1) < 1
+						IF MONEY:1 < 1
+							CALL MESSAGE_WINDOW_D, "ジャックフロスト", "は！？　1マッカも無いとか意味わかんないホ/ビンボー人は出て行くホ！"
+							CALL MESSAGE_WINDOW_D, "", "追い出されてしまった……"
+							FLAG:現X = 1
+							FLAG:現Y = 5
+						ELSE
+							CALL MESSAGE_WINDOW_D, "ジャックフロスト", "お土産の木刀、買っちゃうホ？/旅行の記念にどうぞだホー"
+							PRINTL 買う？
+							CALL INPUT_YN,"Yes","No"
+							IF RESULT == 0
+								CALL MESSAGE_WINDOW_D, "ジャックフロスト", "やったホー！　どうぞどうぞだホ！"
+								CALL MESSAGE_WINDOW_D, "", "＞これは……/＞武器『檜の木剣』を手に入れた"
+								ITEM:[[アイテム:檜の木剣]] += 1
+								MONEY:1 -= 1
+								SETBIT ダンジョンフラグ:27:14, 1
+								GOTO TTJB_SHOP_00_04
+							ELSE
+								GOTO TTJB_SHOP_00_04
+							ENDIF
+						ENDIF
+					ELSE
+						IF MONEY:1 < 7
+							CALL MESSAGE_WINDOW_D, "ジャックフロスト", "んー？　マッカが足りてないホ、お金を数え直すホ"
+							GOTO TTJB_SHOP_00_04
+						ELSE
+							CALL MESSAGE_WINDOW_D, "ジャックフロスト", "お土産の木刀、買っちゃうホ？/旅行の記念にどうぞだホー"
+							PRINTL 買う？
+							CALL INPUT_YN,"Yes","No"
+							IF RESULT == 0
+								CALL MESSAGE_WINDOW_D, "ジャックフロスト", "ほい、持つところに名前を掘るといいホ"
+								CALL MESSAGE_WINDOW_D, "", "＞武器『檜の木剣』を手に入れた"
+								ITEM:[[アイテム:檜の木剣]] += 1
+								MONEY:1 -= 7
+								GOTO TTJB_SHOP_00_04
+							ELSE
+								GOTO TTJB_SHOP_00_04
+							ENDIF
+						ENDIF
+					ENDIF
+				;東京タワーソード
+				ELSEIF RESULT == 1
+					IF MONEY:1 < 1200
+						CALL MESSAGE_WINDOW_D, "ジャックフロスト", "んー？　マッカが足りてないホ、お金を数え直すホ"
+						GOTO TTJB_SHOP_00_04
+					ELSE
+						CALL MESSAGE_WINDOW_D, "ジャックフロスト", "真っ赤で大きな東京タワーソード！/かっこいいホーかっこいいホー/買っちゃうホ？"
+						PRINTL 買う？
+						CALL INPUT_YN,"Yes","No"
+						IF RESULT == 0
+							CALL MESSAGE_WINDOW_D, "ジャックフロスト", "フフフ、お似合いですホお客様！　1200マッカ入りまーす！！！"
+							CALL MESSAGE_WINDOW_D, "", "＞これは……/＞武器『真紅の長巻』を手に入れた"
+							ITEM:[[アイテム:真紅の長巻]] += 1
+							MONEY:1 -= 1200
+							GOTO TTJB_SHOP_00_04
+						ELSE
+							GOTO TTJB_SHOP_00_04
+						ENDIF
+					ENDIF
+				;東京タワーヘルメット
+				ELSEIF RESULT == 2 && GETBIT(ダンジョンフラグ:27:14, 2) < 1
+					IF MONEY:1 < 550
+						CALL MESSAGE_WINDOW_D, "ジャックフロスト", "んー？　マッカが足りてないホ、お金を数え直すホ"
+						GOTO TTJB_SHOP_00_04
+					ELSE
+						CALL MESSAGE_WINDOW_D, "ジャックフロスト", "硬いぞー赤いぞーかっこいいぞー！/東京タワーヘルメット、いかがですホ？"
+						PRINTL 買う？
+						CALL INPUT_YN,"Yes","No"
+						IF RESULT == 0
+							CALL MESSAGE_WINDOW_D, "ジャックフロスト", "どーぞどーぞ！　ここで装備していくといいホ！"
+							CALL MESSAGE_WINDOW_D, "", "＞これは……/＞頭防具『暁の兜』を手に入れた"
+							ITEM:[[アイテム:暁の兜]] += 1
+							MONEY:1 -= 550
+							SETBIT ダンジョンフラグ:27:14, 2
+							GOTO TTJB_SHOP_00_04
+						ELSE
+							GOTO TTJB_SHOP_00_04
+						ENDIF
+					ENDIF
+				;東京タワーアーマー
+				ELSEIF RESULT == 3 && GETBIT(ダンジョンフラグ:27:14, 3) < 1
+					IF MONEY:1 < 1200
+						CALL MESSAGE_WINDOW_D, "ジャックフロスト", "んー？　マッカが足りてないホ、お金を数え直すホ"
+						GOTO TTJB_SHOP_00_04
+					ELSE
+						CALL MESSAGE_WINDOW_D, "ジャックフロスト", "真っ赤なおべべは正義の証！/東京タワーアーマー、買っちゃいますホ？"
+						PRINTL 買う？
+						CALL INPUT_YN,"Yes","No"
+						IF RESULT == 0
+							CALL MESSAGE_WINDOW_D, "ジャックフロスト", "フフフ、お似合いですホお客様！　1200マッカ入りまーす！！！"
+							CALL MESSAGE_WINDOW_D, "", "＞これは……/＞胴防具『暁の鎧』を手に入れた"
+							ITEM:[[アイテム:暁の鎧]] += 1
+							MONEY:1 -= 1200
+							SETBIT ダンジョンフラグ:27:14, 3
+							GOTO TTJB_SHOP_00_04
+						ELSE
+							GOTO TTJB_SHOP_00_04
+						ENDIF
+					ENDIF
+				;東京タワーアーム
+				ELSEIF RESULT == 4 && GETBIT(ダンジョンフラグ:27:14, 4) < 1
+					IF MONEY:1 < 400
+						CALL MESSAGE_WINDOW_D, "ジャックフロスト", "んー？　マッカが足りてないホ、お金を数え直すホ"
+						GOTO TTJB_SHOP_00_04
+					ELSE
+						CALL MESSAGE_WINDOW_D, "ジャックフロスト", "キラめく赤さが本物の貫禄！/東京タワーアーム、買っちゃいますホ？"
+						PRINTL 買う？
+						CALL INPUT_YN,"Yes","No"
+						IF RESULT == 0
+							CALL MESSAGE_WINDOW_D, "ジャックフロスト", "どーぞどーぞ！　ここで装備していくといいホ！"
+							CALL MESSAGE_WINDOW_D, "", "＞これは……/＞腕防具『暁の篭手』を手に入れた"
+							ITEM:[[アイテム:暁の篭手]] += 1
+							MONEY:1 -= 400
+							SETBIT ダンジョンフラグ:27:14, 4
+							GOTO TTJB_SHOP_00_04
+						ELSE
+							GOTO TTJB_SHOP_00_04
+						ENDIF
+					ENDIF
+				;東京タワーながぐつ
+				ELSEIF RESULT == 5 && GETBIT(ダンジョンフラグ:27:14, 5) < 1
+					IF MONEY:1 < 400
+						CALL MESSAGE_WINDOW_D, "ジャックフロスト", "んー？　マッカが足りてないホ、お金を数え直すホ"
+						GOTO TTJB_SHOP_00_04
+					ELSE
+						CALL MESSAGE_WINDOW_D, "ジャックフロスト", "赤くて……なんか……硬い！/東京タワーながぐつ、買っちゃいますホ？"
+						PRINTL 買う？
+						CALL INPUT_YN,"Yes","No"
+						IF RESULT == 0
+							CALL MESSAGE_WINDOW_D, "ジャックフロスト", "どーぞどーぞ！　ここで装備していくといいホ！"
+							CALL MESSAGE_WINDOW_D, "", "＞これは……/＞足防具『暁の具足』を手に入れた"
+							ITEM:[[アイテム:暁の具足]] += 1
+							MONEY:1 -= 400
+							SETBIT ダンジョンフラグ:27:14, 5
+							GOTO TTJB_SHOP_00_04
+						ELSE
+							GOTO TTJB_SHOP_00_04
+						ENDIF
+					ENDIF
+				;耐破魔のリング（不良在庫）
+				ELSEIF RESULT == 6 && GETBIT(ダンジョンフラグ:27:14, 6) < 1
+					IF MONEY < 10000
+						CALL MESSAGE_WINDOW_D, "ジャックフロスト", "んー？　いくら円でもごまかしはダメホ、数え直すホ"
+						GOTO TTJB_SHOP_00_04
+					ELSE
+						CALL MESSAGE_WINDOW_D, "ジャックフロスト", "人間は破魔耐性が要らないから売れ残ったんだホ……/ふりょーざいこだから、できたら買っていってほしいホ！"
+						PRINTL 買う？
+						CALL INPUT_YN,"Yes","No"
+						IF RESULT == 0
+							CALL MESSAGE_WINDOW_D, "ジャックフロスト", "やったホー！　ささ、どうぞどうぞ持ってって！　こんなもん要らないホ！"
+							CALL MESSAGE_WINDOW_D, "", "＞これは……/＞アクセサリ『耐破魔のリング』を手に入れた"
+							ITEM:[[アイテム:耐破魔のリング]] += 1
+							MONEY -= 10000
+							SETBIT ダンジョンフラグ:27:14, 6
+							GOTO TTJB_SHOP_00_04
+						ELSE
+							GOTO TTJB_SHOP_00_04
+						ENDIF
+					ENDIF
+				;東京タワー水
+				ELSEIF RESULT == 7
+					IF MONEY:1 < 550
+						CALL MESSAGE_WINDOW_D, "ジャックフロスト", "んー？　マッカが足りてないホ、お金を数え直すホ"
+						GOTO TTJB_SHOP_00_04
+					ELSE
+						CALL MESSAGE_WINDOW_D, "ジャックフロスト", "東京タワーの形のボトルに入った水だホ/なんかシュワシュワしてて刺激的だホ/買って買って！　いろんな病気に効く魔法の水って言ってたホー！"
+						PRINTL 買う？
+						CALL INPUT_YN,"Yes","No"
+						IF RESULT == 0
+							CALL MESSAGE_WINDOW_D, "", "＞これは……/＞アイテム『アムリタソーダ』を手に入れた"
+							ITEM:[[アイテム:アムリタソーダ]] += 1
+							MONEY:1 -= 550
+							GOTO TTJB_SHOP_00_04
+						ELSE
+							GOTO TTJB_SHOP_00_04
+						ENDIF
+					ENDIF
+				ELSEIF RESULT == 9
+					CALL MESSAGE_WINDOW_D , "ジャックフロスト" , "また来てねー！"
+					FLAG:現X = 1
+					FLAG:現Y = 5
+				ELSE
+					GOTO TTJB_SHOP_00_05
+				ENDIF
+			ELSEIF RESULT == 2
+				CALL SHOP_COM_110
+			ELSE
+				CALL MESSAGE_WINDOW_D , "ジャックフロスト" , "また来てねー！"
+				FLAG:現X = 1
+				FLAG:現Y = 5
+
+			ENDIF
+			;GOTO TTJB_SHOP_00_03
+			
+			;↓前に検討してた処理、念のために残す
+			;$TTJB_SHOP
+			;CALL INPUT_SELECT_D, "何か買うか？//[1]買う/[2]ステイタスを見る///[0]外に出る" , , , 2
+			;IF RESULT == 1
+			;	CALL MESSAGE_WINDOW_D , "ジャックフロスト" , "え？　戦いの道具が欲しい？　遊び心が足りないホー"
+			;	;テストなう
+			;	LOCALS = 
+			;	LOCALS += "制服,10,"
+			;	LOCALS += "スーツ,20,"
+			;	LOCALS += "私立頌礼館学院制服,10,"
+			;	LOCALS += "サバイバルベスト,15,"
+			;	LOCALS += "レザーブーツ,5,"
+			;	CALL DUNGEON_SHOPS, 1, LOCALS
+			;	ELSEIF RESULT == 2
+			;	CALL SHOP_COM_110
+			;ELSE
+			;	CALL MESSAGE_WINDOW_D , "ジャックフロスト" , "また来てねー！"
+			;	CALL DUNGEON_WORP,1,1,7
+			;	RETURN 1
+			;ENDIF
+			;GOTO TTJB_SHOP
+				
+			
+		CASE 102
+			CALL MESSAGE_WINDOW_D, "エルフ", "あ、侵入者。/見なかったことにするからさ、アンタも見逃してよ。/アタシ戦いとか嫌いなんだよねー、お金数えてる方が好き"
+			
+		;メインデッキ
+		CASE 200
+			IF GETBIT(ダンジョンフラグ:27:13,3) == 0 && GETBIT(ダンジョンフラグ:27:13,2) && ダンジョンフラグ:27:1 && FINDCHARA_B([[キャラ:華恋]]) == 2 && FINDCHARA_B([[キャラ:ひかり]]) == 2
+				CALL MESSAGE_WINDOW_D, "", "＞展望台から見渡すと、東京の景色が遠くまでよく見えた/＞あなたにとっては見慣れた、色あせた、暗く淀んだ魔の都市だ"
+				;朝
+				IF TIME == 0
+					CALL MESSAGE_WINDOW_D, "ひかり", "早朝だっていうのに、景色が暗い/これが、悪魔に支配された世界/私たちが、これから、生きていかないといけない世界……"
+				;昼
+				ELSEIF TIME == 1
+					CALL MESSAGE_WINDOW_D, "ひかり", "こんな景色、知らない、こんな東京、分からない/これが、悪魔に支配された世界/私たちが、これから、生きていかないといけない世界……"
+				;夕
+				ELSEIF TIME == 2
+					CALL MESSAGE_WINDOW_D, "ひかり", "夕焼けが気持ち悪い色をしてる、まるで、血の色/これが、悪魔に支配された世界/私たちが、これから、生きていかないといけない世界……"
+				;夜
+				ELSEIF TIME == 3
+					CALL MESSAGE_WINDOW_D, "ひかり", "明かりが少ない。東京の夜景が、こんなに暗いの？/これが、悪魔に支配された世界/私たちが、これから、生きていかないといけない世界……"
+				ENDIF
+				CALL MESSAGE_WINDOW_D, "", "＞ひかりはショックを受けたのか、目を見開いたまま固まってしまった/＞一方、愛城華恋は、キラキラと目を輝かせて手すりを握り身体を目一杯に乗り出している"
+				CALL MESSAGE_WINDOW_D, "華恋", "んー、あれは六本木ヒルズですかなー？/じゃああっちが渋谷？/っていうことは……聖翔音楽学園は、あっちだね！"
+				;聖翔の立地は校舎の元ネタに準拠
+				CALL MESSAGE_WINDOW_D, "", "＞はしゃぐ華恋に、ひかりは「どうして」と声を上げた"
+				CALL MESSAGE_WINDOW_D, "華恋", "ひかりちゃん？"
+				CALL MESSAGE_WINDOW_D, "ひかり", "どうして、どうして華恋はそう能天気なの/もう戻れないのよ、そこに、学校はもう無いのよ/私たちは……私たちは、偽物なのよ！？"
+				CALL MESSAGE_WINDOW_D, "華恋", "えええ……？"
+				CALL MESSAGE_WINDOW_D, "ひかり", "私たちはもう舞台少女じゃない！　まともな人間ですらない！/悪魔を倒す道具として、必要だから生かされてるだけ！/それなのに華恋はずっと舞台のことばかり……/もう誰にも、歌もダンスも求められてないって言うのに！"
+				CALL MESSAGE_WINDOW_D, "", "＞ひかりの言葉に、華恋の雰囲気が変わった/＞彼女は背筋を伸ばし、ひかりに向き直ると/＞真剣な顔で、キラめく瞳でひかりを見つめた"
+				CALL MESSAGE_WINDOW_D, "華恋", "ひかりちゃん、私たちは舞台少女だよ"
+				CALL MESSAGE_WINDOW_D, "ひかり", "待っている舞台もないのよ！？"
+				CALL MESSAGE_WINDOW_D, "華恋", "ひかりちゃん、この世界に来たとき、私のためにスタァライトごっこしてくれたよね/私、嬉しかった/一瞬だけの、思い付きの、即興劇だったけど/私、すっごく元気が出た"
+				CALL MESSAGE_WINDOW_D, "ひかり", "あんなの、ただの、その場しのぎ/ただの、私たちの、自己満足"
+				CALL MESSAGE_WINDOW_D, "華恋", "舞台がないなんて嘘っぱちだよ/私、あのスタァライトのつづきがしたい/私、ひかりちゃんの舞台が見たい"
+				CALL MESSAGE_WINDOW_D, "ひかり", "う……"
+				CALL MESSAGE_WINDOW_D, "", "＞華恋が詰め寄り、ひかりがたじろぐ"
+				CALL MESSAGE_WINDOW_D, "華恋", "うまく、言葉に、出来ないけれど/ひかりちゃん、/私が、ひかりちゃんの、舞台になるよ/だから、私と……！"
+				CALL MESSAGE_WINDOW_D, "", "＞ひかりは、光り輝く瞳に耐えかね、唇を噛んで視線をそらした"
+				CALL MESSAGE_WINDOW_D, "ひかり", "……もうやめて/これ以上、私に、夢を見させないで"
+				CALL MESSAGE_WINDOW_D, "", "＞華恋は、遠くまで続く東京の景色を背負ったまま、/　踵を返したひかりの背中に微笑んだ"
+				CALL MESSAGE_WINDOW_D, "華恋", "待ってる、舞台で"
+				CALL MESSAGE_WINDOW_D, "", "＞ひかりは逃げるようにあなたの影に隠れた"
+				CALL MESSAGE_WINDOW_D, "ひかり", "……バ華恋/そんなこと言われたら、/私までスタァライトしたくなるじゃない"
+				CALL MESSAGE_WINDOW_D, "", "＞しばらく、あなたたちは、展望台からの景色を無言で眺めた……"
+				CALL MESSAGE_WINDOW_D, "ひかり", "……はあ/そろそろ帰りましょう/あの子、放っておくと、いつまでもここに居ると思うから"
+				CALL MESSAGE_WINDOW_D, "", "＞ひかりが言うほど、華恋は子供ではないように思えてきたが……/＞まあ、時間を浪費するのも宜しくない/＞要件も終わったことだ、最上階のターミナルから帰宅することとしよう"
+				
+				SETBIT ダンジョンフラグ:27:13,3
+			ELSE
+				CALL MESSAGE_WINDOW_D, "", "ここの窓だけ補強されていない。/東京の景色が遠くまでよく見える……"
+			ENDIF
+		CASE 202
+			;魔女が死んでる
+			IF ダンジョンフラグ:(FLAG:現ダンジョン):11 == 13 || ダンジョンフラグ:(FLAG:現ダンジョン):11 == 14
+				CALL MESSAGE_WINDOW_D, "", "＞結界が張られていた痕跡がある/＞あなたは注意して通り抜けた"
+			ELSE
+				CALL MESSAGE_WINDOW_D, "", "＞結界が張られている……これは突破できそうにない"
+				FLAG:現X = 7
+				FLAG:現Y = 1
+			ENDIF
+		;
+		CASE 301
+			
+			;魔女を助けたけどクリアフラグが立ってない
+			IF ダンジョンフラグ:(FLAG:現ダンジョン):11 == 11 && ダンジョンフラグ:(FLAG:現ダンジョン):1 < 1
+				CALL MESSAGE_WINDOW_D, "魔女", "人助けついでに、このへん片づけるの手伝ってくれない？/ダメ？　あ、そ"
+				RETURN 1
+			;かれひか東京タワー観光済み＆魔女を助けてる
+			ELSEIF GETBIT(ダンジョンフラグ:27:13,4) && ダンジョンフラグ:(FLAG:現ダンジョン):11 == 11 && ダンジョンフラグ:27:1 && FINDCHARA_B([[キャラ:華恋]]) == 2 && FINDCHARA_B([[キャラ:ひかり]]) == 2
+				CALL MESSAGE_WINDOW_D, "魔女", "あんたたち、ホントに東京タワー好きね/いっそ住んだら？　部屋、空いてるわよ"
+				CALL MESSAGE_WINDOW_D, "ひかり", "やめてください、本気にする子がいるので"
+				RETURN 1
+			;かれひか東京タワー観光中＆魔女を助けてる
+			ELSEIF (GETBIT(ダンジョンフラグ:27:13,4) == 0) && ダンジョンフラグ:(FLAG:現ダンジョン):11 == 11 && GETBIT(ダンジョンフラグ:27:13,3) && ダンジョンフラグ:27:1 && FINDCHARA_B([[キャラ:華恋]]) == 2 && FINDCHARA_B([[キャラ:ひかり]]) == 2
+				CALL MESSAGE_WINDOW_D, "魔女", "あー？　なんか初めて見る子が居るわね、新手の悪魔？"
+				CALL MESSAGE_WINDOW_D, "ひかり", "……似たようなものです/お邪魔してます、騒がしくして済みません"
+				CALL MESSAGE_WINDOW_D, "魔女", "はいどーも、悪さしないなら、それなりに歓迎するわ"
+				CALL MESSAGE_WINDOW_D, "華恋", "初めまして！　愛城華恋です！/魔女さんは東京タワーに住んでるんですか？"
+				CALL MESSAGE_WINDOW_D, "魔女", "……住んでんのよ、文句ある？"
+				CALL MESSAGE_WINDOW_D, "華恋", "わー、いいなー！/私、東京タワー大好きなんです！/あっ、こっちは私の友達のひかりちゃん"
+				CALL MESSAGE_WINDOW_D, "魔女", "あ、そう"
+				CALL MESSAGE_WINDOW_D, "ひかり", "……すみません、すぐ帰りますので"
+				CALL MESSAGE_WINDOW_D, "魔女", "どうぞご勝手に/こっちも、お茶もお菓子も出せないしさ/まあ、東京タワーも、別に私のもんじゃないし、/悪魔さえ怖くないならまた来たらいいわ"
+				CALL MESSAGE_WINDOW_D, "", "＞魔女はフードを深くかぶり直し、面倒くさそうにシッシと手を振った"
+				CALL MESSAGE_WINDOW_D, "華恋", "おじゃましましたー！"
+				CALL MESSAGE_WINDOW_D, "魔女", "はいはい！/やったら元気ね、あの子……/ふん、舞台少女、舞台少女ねえ……"
+				
+				SETBIT ダンジョンフラグ:27:13,4
+				RETURN 1
+			ELSEIF ダンジョンフラグ:(FLAG:現ダンジョン):11 == 11 && イベントフラグ:49:0 == 2
+				CALL MESSAGE_WINDOW_D, "魔女", "奥のヘソクリ部屋、開けておいたわ/この間のお礼よ"
+				CALL SET_TILE, 1 , 3 , ダンジョンフラグ:27:11 , 11 , 3001
+				RETURN 1
+			ELSEIF ダンジョンフラグ:(FLAG:現ダンジョン):11 == 11
+				CALL MESSAGE_WINDOW_D, "魔女", "また来たの？　アンタ暇なの？"
+				CALL SET_TILE, 1 , 3 , ダンジョンフラグ:27:11 , 11 , 3001
+				RETURN 1
+				
+			;魔女加入後
+			ELSEIF ダンジョンフラグ:(FLAG:現ダンジョン):11 == 12
+				CALL MESSAGE_WINDOW_D, "", "＞結界を稼働させるための魔法陣が煌々と輝いている……"
+				RETURN 1
+				
+			;メシア教が占拠かつクリアまだ
+			ELSEIF ダンジョンフラグ:(FLAG:現ダンジョン):11 == 13 && ダンジョンフラグ:(FLAG:現ダンジョン):1 < 1
+				CALL MESSAGE_WINDOW_D, "", "ここにはもう血だまりしかない"
+				RETURN 1
+			;かれひか東京タワー観光済み＆メシア教の依頼を受けた
+			ELSEIF GETBIT(ダンジョンフラグ:27:13,4) && ダンジョンフラグ:(FLAG:現ダンジョン):11 == 13 && ダンジョンフラグ:27:1 && FINDCHARA_B([[キャラ:華恋]]) == 2 && FINDCHARA_B([[キャラ:ひかり]]) == 2
+				CALL MESSAGE_WINDOW_D, "カズフェル", "舞台、舞台かあ/私も何か、即興劇でも放送してみようかしら……？"
+				CALL MESSAGE_WINDOW_D, "華恋", "グッドグッドです！/天使さま、良い声してるもん！　きっといい舞台になります！"
+			
+				RETURN 1
+			;かれひか東京タワー観光中＆メシア教の依頼を受けた
+			ELSEIF (GETBIT(ダンジョンフラグ:27:13,4) == 0) && ダンジョンフラグ:(FLAG:現ダンジョン):11 == 13 && GETBIT(ダンジョンフラグ:27:13,3) && ダンジョンフラグ:27:1 && FINDCHARA_B([[キャラ:華恋]]) == 2 && FINDCHARA_B([[キャラ:ひかり]]) == 2
+				CALL MESSAGE_WINDOW_D, "カズフェル", "ああ、ファントムのサマナーさん、先日はありがとうございました。/そちらの可愛らしい方々は？/見たところ……随分と華やかなお姿ですが"
+				CALL MESSAGE_WINDOW_D, "", "＞どんな如何わしい想像をしているのか、/＞美しい少女――天使・カズフェルはその整った眉を怒りの形に歪めた"
+				CALL MESSAGE_WINDOW_D, "華恋", "初めまして、愛城華恋です！/あなたは、ええと……天使さま？/お話はお伺いしてます！"
+				CALL MESSAGE_WINDOW_D, "", "＞ニコニコと笑う華恋を見て毒気を抜かれたか、/　カズフェルはきょとんとした顔で少女を見た"
+				CALL MESSAGE_WINDOW_D, "カズフェル", "あ……いいえ、こちらこそ失礼致しました/あなたたちは、その……善良そうね？/私はカズフェル、このメシア放送局の管理者です/あなたたちは？"
+				CALL MESSAGE_WINDOW_D, "華恋", "はい！/私たちは聖翔音楽学園、９９期生、……舞台少女です！"
+				CALL MESSAGE_WINDOW_D, "カズフェル", "舞台……？　女優さんなの？"
+				CALL MESSAGE_WINDOW_D, "華恋", "はい！　といっても、まだまだ未熟ですけど、にへへ"
+				CALL MESSAGE_WINDOW_D, "", "＞あなたはカズフェルに彼女たちの出自を補足した"
+				CALL MESSAGE_WINDOW_D, "カズフェル", "……？/きりん……？"
+				CALL MESSAGE_WINDOW_D, "", "＞しまった、キリンの話は余計だったか/＞カズフェルは頭の上にクエスチョンマークを浮かべて固まった"
+				CALL MESSAGE_WINDOW_D, "ひかり", "ごめんなさい、でも、本当のことなんです"
+				CALL MESSAGE_WINDOW_D, "華恋", "今はこの人のところでお世話になってます！"
+				CALL MESSAGE_WINDOW_D, "カズフェル", "ま、まあ、大変な境遇にあることは分かりました/辛いことがあったらいつでもいらっしゃいね/神はいつでも、救いの道を用意してございますから……"
+				CALL MESSAGE_WINDOW_D, "", "＞カズフェルは、あなたに「悪の道には引き込まないで」とクギを刺しつつ/　舞台少女を笑顔と握手で見送った……"
+				
+				SETBIT ダンジョンフラグ:27:13,4
+				RETURN 1
+			;メシア教が占拠＆依頼を受けた
+			ELSEIF ダンジョンフラグ:(FLAG:現ダンジョン):11 == 13 && イベントフラグ:49:0 == 1
+				CALL MESSAGE_WINDOW_D, "美しい少女", "ああ、ファントムのデビルサマナーさん/先日は邪悪な魔女の討伐、ありがとうございます/おかげで神の御心を人々に直接届けられるようになりました……"
+				RETURN 1
+			;メシア教が占拠
+			ELSEIF ダンジョンフラグ:(FLAG:現ダンジョン):11 == 13 && イベントフラグ:49:0 == 1
+				CALL MESSAGE_WINDOW_D, "美しい少女", "どうして……あなたは魔女を討伐してくださったのですか？/依頼は受けないと聴いていたのに"
+				RETURN 1
+				
+			;かれひか東京タワー観光済み＆ファントムが占領
+			ELSEIF GETBIT(ダンジョンフラグ:27:13,4) && ダンジョンフラグ:(FLAG:現ダンジョン):11 == 13 && ダンジョンフラグ:27:1 && FINDCHARA_B([[キャラ:華恋]]) == 2 && FINDCHARA_B([[キャラ:ひかり]]) == 2
+				CALL MESSAGE_WINDOW_D, "ファントム構成員", "あっ、その子が例の舞台少女ですか？/へえー、確かに可愛い顔してるわ/そっちに置いておくのは勿体ないというか適任というか……"
+			
+				RETURN 1
+			;かれひか東京タワー観光中＆ファントムが占領
+			ELSEIF (GETBIT(ダンジョンフラグ:27:13,4) == 0) && ダンジョンフラグ:(FLAG:現ダンジョン):11 == 14 && GETBIT(ダンジョンフラグ:27:13,3) && ダンジョンフラグ:27:1 && FINDCHARA_B([[キャラ:華恋]]) == 2 && FINDCHARA_B([[キャラ:ひかり]]) == 2
+				CALL MESSAGE_WINDOW_D, "ファントム構成員", "あっ、その子が例の舞台少女ですか？/へえー、確かに可愛い顔してるわ/そっちに置いておくのは勿体ないというか適任というか……"
+			
+				SETBIT ダンジョンフラグ:27:13,4
+				RETURN 1
+			;ファントムが占領
+			ELSEIF ダンジョンフラグ:(FLAG:現ダンジョン):11 == 14
+				CALL MESSAGE_WINDOW_D, "ファントム構成員", "せっかくの電波塔です、こちらで有効活用してみせます/……ええと、テレビに映ってたら、応援してくださいね？"
+				RETURN 1
+				
+			ENDIF
+			
+			CALL SHOW_PICTURE, "D"
+			;メシア教の依頼を受けた
+			IF イベントフラグ:49:0 == 1
+				CALL MESSAGE_WINDOW_D, "", "＞深くフードを被った少女が、天使の死体の上に立っている。"
+				CALL MESSAGE_WINDOW_D, "魔女", "まずいわね、こんどはデビルサマナーか……/あんたファントム？　メシア教に電波塔を渡すつもり？/あのバカどもにデカい顔をさせても良いってわけ？"
+				CALL INPUT_SELECT_D, "ただならぬ気配だ……どうする？/[0]退却する /[1]戦う"
+				IF RESULT == 0
+					CALL MESSAGE_WINDOW_D, "魔女", "賢明ね。去る者は追わないわ"
+					FLAG:現X = 3
+					FLAG:現Y = 7
+					RETURN 1
+					
+				ELSE
+				
+					CALL MESSAGE_WINDOW_D, "魔女", "ふん、組織のイヌめ/……天使ごとやっつけてやるわ、食らえ！"
+					CALL MESSAGE_WINDOW_D, "", "魔女はミサイルを発射した！"
+					;自軍HP半減
+					FOR LOCAL,1,7
+						IF POS(LOCAL) > -1 && GET_STATE(CFLAG:(POS(LOCAL)):ステート) != "DYING"
+							PRINTFORML [{LOCAL}] %CALLNAME:POS(LOCAL)%　>>>>>>　{MAXBASE:(POS(LOCAL)):ＨＰ*50/100}ダメージ
+							CALL VAR_HP,POS(LOCAL),-MAXBASE:(POS(LOCAL)):ＨＰ*50/100
+						ENDIF
+					NEXT
+					WAIT
+					CALL MESSAGE_WINDOW_D, "", "/＞超人 東京タワーの魔女が１体出た！/" , , , , , , , , , "CENTER"
+					
+					
+					FLAG:逃走不可フラグ = 1
+					FLAG:会話不能フラグ = 1
+					FLAG:先制不意打ちキャンセル = 1
+					CALL SET_ENEMY,9,[[キャラ:東京タワーの魔女]],42,0,1
+					CFLAG:(CHARANUM-1):行動回数 = 2
+					CFLAG:(CHARANUM-1):ＨＰ補正 += 500
+					
+					;超人扱いに
+					ABL:(CHARANUM-1):種族 = 43
+					CSTR:(CHARANUM-1):種族名 = 超人
+					
+					;ニュークリアボムを100％落とす
+					ABL:(CHARANUM-1):アイテム1 = 1112
+					ABL:(CHARANUM-1):入手確率1 = 100
+					;マハ・ジオンガのカードを50％落とす
+					ABL:(CHARANUM-1):アイテム2 = 10905
+					ABL:(CHARANUM-1):入手確率2 = 50
+					;ニュークリアミサイルのスキルカードを5％落とす
+					ABL:(CHARANUM-1):アイテム3 = 11905
+					ABL:(CHARANUM-1):入手確率3 = 5
+					
+					ABL:(CHARANUM-1):スキル1 = [[スキル:しばきまくり]]
+					ABL:(CHARANUM-1):スキル2 = [[スキル:スパークボルト]]
+					ABL:(CHARANUM-1):スキル3 = [[スキル:マリンカリン]]
+					ABL:(CHARANUM-1):スキル4 = [[スキル:フラッシュボム]]
+					ABL:(CHARANUM-1):スキル5 = [[スキル:ハッピートリガー]]
+					ABL:(CHARANUM-1):スキル6 = [[スキル:ドルミナー]]
+					ABL:(CHARANUM-1):スキル7 = [[スキル:ライトブラスト]]
+					ABL:(CHARANUM-1):スキル8 = 0
+				
+					CALL SYNC_STATUS,(CHARANUM-1)
+					CALL HEALTH_CHARA,(CHARANUM-1)
+					CALL BATTLE_START
+					FLAG:逃走不可フラグ = 0
+					FLAG:会話不能フラグ = 0
+					FLAG:先制不意打ちキャンセル = 0
+					CALL SHOW_PICTURE, "D"
+					CALL MESSAGE_WINDOW_D, "魔女", "守らなくちゃ、いけなかったのに"
+					CALL MESSAGE_WINDOW_D, "", "/＞超人 東京タワーの魔女は力尽きた/" , , , , , , , , , "CENTER"
+					
+					CALL ADD_NEW_COMPANION,[[キャラ:東京タワーの魔女]],0
+					
+					CALL MESSAGE_WINDOW_D, "","＞あなたは魔女の死体を袋に詰めた/＞蘇生させれば使い道はいくらでもあるだろう"
+					CALL MESSAGE_WINDOW_D, "","＞奴隷　東京タワーの魔女を手に入れた"
+					
+					ダンジョンフラグ:27:11 = 13
+					
+					RETURN 1
+				
+				ENDIF
+				
+			;メシア教の依頼を断って個人的に来た
+			ELSEIF イベントフラグ:49:0 == 2
+				CALL MESSAGE_WINDOW_D, "", "＞魔法陣の上に、深くフードを被った少女が立っている"
+				CALL MESSAGE_WINDOW_D, "魔女", "結界を破って入って来たのはアンタね。/メシア？　ガイア？　/悪いことは言わないわ、今すぐに立ち去りなさい"
+				
+				CALL INPUT_SELECT_D, "ただならぬ気配だ……どうする？/[0]退却する /[1]戦う/[2]話がしたいので武器を置く"
+				IF RESULT == 0
+					CALL MESSAGE_WINDOW_D, "魔女", "賢明ね。去る者は追わないわ"
+					FLAG:現X = 3
+					FLAG:現Y = 7
+					RETURN 1
+					
+				ELSEIF RESULT == 1
+					
+					CALL MESSAGE_WINDOW_D, "魔女", "あら、やる気なんだ。なら……/くたばれッ！"
+					CALL MESSAGE_WINDOW_D, "", "魔女はミサイルを発射した！"
+					;自軍HP半減
+					FOR LOCAL,1,7
+						IF POS(LOCAL) > -1 && GET_STATE(CFLAG:(POS(LOCAL)):ステート) != "DYING"
+							PRINTFORML [{LOCAL}] %CALLNAME:POS(LOCAL)%　>>>>>>　{MAXBASE:(POS(LOCAL)):ＨＰ*50/100}ダメージ
+							CALL VAR_HP,POS(LOCAL),-MAXBASE:(POS(LOCAL)):ＨＰ*50/100
+						ENDIF
+					NEXT
+					WAIT
+					CALL MESSAGE_WINDOW_D, "", "/＞超人 東京タワーの魔女が１体出た！/" , , , , , , , , , "CENTER"
+					
+					
+					FLAG:逃走不可フラグ = 1
+					FLAG:会話不能フラグ = 1
+					FLAG:先制不意打ちキャンセル = 1
+					CALL SET_ENEMY,9,[[キャラ:東京タワーの魔女]],42,0,1
+					CFLAG:(CHARANUM-1):行動回数 = 2
+					CFLAG:(CHARANUM-1):ＨＰ補正 += 500
+					
+					;超人扱いに
+					ABL:(CHARANUM-1):種族 = 43
+					CSTR:(CHARANUM-1):種族名 = 超人
+					
+					;自力で結界をぶち割ってきた場合はスキルカードのドロップ率爆増
+					;ニュークリアボムを100％落とす
+					ABL:(CHARANUM-1):アイテム1 = 1112
+					ABL:(CHARANUM-1):入手確率1 = 100
+					;マハ・ジオンガのカードを50％落とす
+					ABL:(CHARANUM-1):アイテム2 = 10905
+					ABL:(CHARANUM-1):入手確率2 = 100
+					;ニュークリアミサイルのスキルカードを50％落とす
+					ABL:(CHARANUM-1):アイテム3 = 11905
+					ABL:(CHARANUM-1):入手確率3 = 50
+					
+					ABL:(CHARANUM-1):スキル1 = [[スキル:しばきまくり]]
+					ABL:(CHARANUM-1):スキル2 = [[スキル:スパークボルト]]
+					ABL:(CHARANUM-1):スキル3 = [[スキル:マリンカリン]]
+					ABL:(CHARANUM-1):スキル4 = [[スキル:フラッシュボム]]
+					ABL:(CHARANUM-1):スキル5 = [[スキル:ハッピートリガー]]
+					ABL:(CHARANUM-1):スキル6 = [[スキル:ドルミナー]]
+					ABL:(CHARANUM-1):スキル7 = [[スキル:ライトブラスト]]
+					ABL:(CHARANUM-1):スキル8 = 0
+					ABL:(CHARANUM-1):スキル9 = 0
+					ABL:(CHARANUM-1):スキル10 = 0
+					ABL:(CHARANUM-1):スキル11 = 0
+					ABL:(CHARANUM-1):スキル12 = 0
+					
+					CALL SYNC_STATUS,(CHARANUM-1)
+					CALL HEALTH_CHARA,(CHARANUM-1)
+					CALL BATTLE_START
+					FLAG:逃走不可フラグ = 0
+					FLAG:会話不能フラグ = 0
+					FLAG:先制不意打ちキャンセル = 0
+					CALL SHOW_PICTURE, "D"
+					CALL MESSAGE_WINDOW_D, "魔女", "守らなくちゃ、いけなかったのに"
+					CALL MESSAGE_WINDOW_D, "", "/＞超人 東京タワーの魔女は力尽きた/" , , , , , , , , , "CENTER"
+					
+					CALL ADD_NEW_COMPANION,[[キャラ:東京タワーの魔女]],0
+					
+					CALL MESSAGE_WINDOW_D, "","＞このぐらいなら道返玉で甦る/＞あなたは魔女の死体を袋に詰めた"
+					CALL MESSAGE_WINDOW_D, "","＞奴隷　東京タワーの魔女を手に入れた"
+					ダンジョンフラグ:27:11 = 13
+					
+					;タイルをただの床に
+					;DA:(FLAG:現X):(FLAG:現Y) = 1
+					
+				ELSEIF RESULT == 2
+					
+					CALL MESSAGE_WINDOW_D, "魔女", "んん？　変な反応ね、アタシがやる気だったらどうするの？/まあいいわ、その姿勢は嫌いじゃない/何か聞きたいの？"
+					
+					;直近の返答を記憶するため
+					LOCAL:0 = 0
+					$INPUT_MAJO_KAIWA
+					CALL INPUT_SELECT_D, "[0]東京タワーで何を？ /[1]誰の命令でこんなことを？ /[2]仲間は居ないの？ /[3]聞きたいことは無い、伝えたいことがある "
+					IF RESULT == 0
+						IF GETBIT(LOCAL:0,2)
+							CALL MESSAGE_WINDOW_D, "魔女", "子供かっ！　しつこいと殴るわよ！"
+							SETBIT LOCAL:0,3
+						ELSEIF GETBIT(LOCAL:0,1)
+							CALL MESSAGE_WINDOW_D, "魔女", "はいはい、しつこいわね/そうよ、ここには霊脈がある。攻めるに難く守るに易し……/そのうえ、ここからの電波は関東一円に届く/だから、変な思想の連中には絶対に渡せない、それだけよ"
+							SETBIT LOCAL:0,2
+						ELSE
+							CALL MESSAGE_WINDOW_D, "魔女", "……住んでるのよ/あー、道義に反してるのは分かってる、テナント料も払ってない/でもアンタは家主じゃない。他は？"
+							SETBIT LOCAL:0,1
+						ENDIF
+						
+						GOTO INPUT_MAJO_KAIWA
+					ELSEIF RESULT == 1
+						IF GETBIT(LOCAL:0,5)
+							CALL MESSAGE_WINDOW_D, "魔女", "これ以上は言えないわ/守秘義務ってわけじゃないの/まあ、お告げみたいなものよ。だから答えられない"
+							;STEVENを想定
+							SETBIT LOCAL:0,6
+						ELSEIF GETBIT(LOCAL:0,4)
+							CALL MESSAGE_WINDOW_D, "魔女", "あー、ここら辺に住んでる人は、アタシが勝手に保護してるだけ/幸いお金も物資も困ってないから、ついでよ、ついで/……ここ、危ないから、落ち着いたら出て行けって言ってるんだけどね"
+							SETBIT LOCAL:0,5
+						ELSE
+							CALL MESSAGE_WINDOW_D, "魔女", "【チェックマン】って知ってる？　トーテムポールみたいなやつ/あいつら越しに、ちょっとね/アタシの仕事はここを中立に保つこと。他は？"
+							SETBIT LOCAL:0,4
+						ENDIF
+						
+						GOTO INPUT_MAJO_KAIWA
+					ELSEIF RESULT == 2
+						IF GETBIT(LOCAL:0,8)
+							CALL MESSAGE_WINDOW_D, "魔女", "ええい、誰がボッチですか！/しつこいとミサイルぶつけるわよ！？"
+							SETBIT LOCAL:0,9
+						ELSEIF GETBIT(LOCAL:0,7)
+							CALL MESSAGE_WINDOW_D, "魔女", "周囲の悪魔は奥のターミナルで召喚しているわ/アタシが設定したわけじゃないからアタシも止められない/殺されても文句言わないでね？"
+							SETBIT LOCAL:0,8
+						ELSE
+							CALL MESSAGE_WINDOW_D, "魔女", "ご覧の通りよ、文句ある？/一人でこんだけやってんだから、運命の王子様ぐらい居てもいいのにね……/他は？"
+							SETBIT LOCAL:0,7
+						ENDIF
+
+						GOTO INPUT_MAJO_KAIWA
+					ELSEIF RESULT == 3
+						
+						IF GETBIT(LOCAL:0,3) && GETBIT(LOCAL:0,6) && GETBIT(LOCAL:0,9)
+							CALL MESSAGE_WINDOW_D, "魔女", "はー、それが本題？　ずいぶん遠回りしたわね……。/アンタ、話好き？/別にいいけど"
+						ENDIF
+						CALL MESSAGE_WINDOW_D, "", "＞あなたはメシア教が襲撃を企てていることを魔女に伝えた"
+						CALL MESSAGE_WINDOW_D, "魔女", "ふうん、それをわざわざ？　アタシの結界をブチ割ってまで？/物好きね、アンタ。/まあいいわ、忠告通り、呪殺トラップでも満載にしておく"
+						CALL MESSAGE_WINDOW_D, "", "魔女は何かごそごそと準備を始めた……"
+						CALL MESSAGE_WINDOW_D, "魔女", "そのうち、また来なさい/襲撃が本当で、かつ、アタシが生き残ってたら/何かお礼をしてあげるわ"
+						ダンジョンフラグ:27:11 = 11
+
+					ENDIF
+					
+					
+					
+				ENDIF
+					
+					
+			;メシア教を潰しに来た
+			ELSEIF イベントフラグ:49:0 == 3
+				CALL MESSAGE_WINDOW_D, "魔女", "くっ……頑丈なのね、天使ってヤツは！"
+				CALL MESSAGE_WINDOW_D, "", "＞魔法陣の上に、深くフードを被った少女が膝を突いている。/＞周囲には複数の天使と、それを従える美しい乙女が立っていた。"
+				CALL MESSAGE_WINDOW_D, "メシア教徒", "邪悪なり、東京タワーの魔女/あなたの存在は、むやみに争いを煽るだけ……/神の愛を阻むものに、容赦など致しません"
+				CALL MESSAGE_WINDOW_D, "", "＞あなたは二人に聞こえるように、部屋の壁をコンコンとノックした"
+				CALL MESSAGE_WINDOW_D, "魔女", "新手？　デビル・サマナーか！"
+				CALL MESSAGE_WINDOW_D, "メシア教徒", "……あら？　あなたは、ファントムの？/今更来ても報酬は出せませんよ/お引き取りください"
+				
+				CALL MESSAGE_WINDOW_D, "", "この乙女、顔こそ清楚で美しいが、見た目通りの気配ではない。あなたの返事は――"
+				CALL INPUT_SELECT_D, "[0]ファントムは安売りしない、報いを受けろ/[1]目的は何？/[2]えっ、かわいい"
+				
+				IF RESULT == 0
+					CALL MESSAGE_WINDOW_D, "メシア教徒", "……は？　安く見られた報い、ですか？/本当に、ただそれだけのために？　ここまで沢山の命を蹴散らして？"
+					CALL MESSAGE_WINDOW_D, "メシア教徒", "度し難い……あまりにも野蛮すぎる……！"
+				
+				ELSEIF RESULT == 1
+					;原作のアレ
+					CALL MESSAGE_WINDOW_D, "メシア教徒", "あなたは、この荒れた東京を見て、どう感じた？/無秩序に悪魔が暴れ、人の営みを脅かす、この東京……/今もたくさんの人々が、明日の見えない恐怖におののいている……"
+					CALL MESSAGE_WINDOW_D, "メシア教徒", "今こそ、神の救いの手が、必要だと思うでしょう？"
+					CALL INPUT_SELECT_D, "メシア教徒の少女は真剣なまなざしであなたを見ている……/[0]共感は出来るが、立場上同意できない /[1]メシア教は嫌い、反吐が出る /[2]知らんがな"
+					
+					IF RESULT == 0
+						CFLAG:MASTER:善悪値 += 16
+						CFLAG:MASTER:秩混値 += 16
+						CALL MESSAGE_WINDOW_D, "メシア教徒", "口では何とでも言えるわ/……でも、形だけでも共感してくれるのは嬉しい/あなたとは違う形で出会いたかった"
+					ELSEIF RESULT == 1
+						CFLAG:MASTER:善悪値 -= 16
+						CFLAG:MASTER:秩混値 -= 16
+						CALL MESSAGE_WINDOW_D, "メシア教徒", "……あなたも所詮、ただの傭兵ね"
+					ELSEIF  RESULT == 2
+						CALL MESSAGE_WINDOW_D, "メシア教徒", "は！？/あ、あなたが訊いて来たのに……！"
+					ENDIF
+					
+				ELSEIF RESULT == 2
+					CALL MESSAGE_WINDOW_D, "メシア教徒", "は！？/そういう冗談は嫌いです"
+					CALL MESSAGE_WINDOW_D, "魔女", "アンタ何なの誰よ何しに来たの！？/こっちは大変なのよ！？　バカなの死ぬの！？"
+					CALL MESSAGE_WINDOW_D, "", "＞素直な感想を述べただけなのに双方から怒られた/＞あなたは肩をすくめた"
+				ENDIF
+				
+				CALL MESSAGE_WINDOW_D, "メシア教徒", "――お喋りはここまでです"
+				CALL MESSAGE_WINDOW_D, "", "＞メシア教徒の身体が光に包まれる"
+				CALL MESSAGE_WINDOW_D, "", "＞次の瞬間、三対の黄金の翼をもつ異形の天使が、あなたを睨み付けていた！"
+				
+				CALL MESSAGE_WINDOW_D, "", "/＞天使　カズフェルが１体出た！/" , , , , , , , , , "CENTER"
+				
+				SETCOLOR 0xff0033
+				PRINTFORML 
+				PRINTFORML ┏＞カズフェル━━━━━━━━━━━━━━━━━━━━━━┓
+				PRINTFORML ┃　　　　　　　　　　　　　　　　　　　　　　　　　　　　┃
+				PRINTFORML ┃　　　これ以上、神の御心に逆らうことは、許さん！　　　　┃
+				PRINTFORML ┃　　　　　　　　　　　　　　　　　　　　　　　　　　　　┃
+				PRINTFORMW ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+				RESETCOLOR
+				
+				FLAG:逃走不可フラグ = 1
+				FLAG:会話不能フラグ = 1
+				FLAG:先制不意打ちキャンセル = 1
+				CALL SET_ENEMY,9,[[キャラ:カズフェル]],42,0,1
+				CFLAG:(CHARANUM-1):行動回数 = 2
+				CFLAG:(CHARANUM-1):ＨＰ補正 += 2250
+				
+				;回転説法のスキルカードを5％落とす
+				ABL:(CHARANUM-1):アイテム3 = 11320
+				ABL:(CHARANUM-1):入手確率3 = 5
+				
+				ABL:(CHARANUM-1):スキル1 = [[スキル:高揚の歌]]
+				ABL:(CHARANUM-1):スキル2 = [[スキル:マハ・ザンマ]]
+				ABL:(CHARANUM-1):スキル3 = [[スキル:ガルーラ]]
+				ABL:(CHARANUM-1):スキル4 = [[スキル:マリンカリン]]
+				ABL:(CHARANUM-1):スキル5 = [[スキル:ラク・カジャ]]
+				ABL:(CHARANUM-1):スキル6 = 0
+				ABL:(CHARANUM-1):スキル7 = 0
+				ABL:(CHARANUM-1):スキル8 = 0
+				
+				;飛具弱点のままだと速攻落とされてしまうので……ｗ
+				MAXBASE:(CHARANUM-1):飛具 = 100
+				BASE:(CHARANUM-1):飛具 = 100
+				
+				CALL SYNC_STATUS,(CHARANUM-1)
+				CALL HEALTH_CHARA,(CHARANUM-1)		
+				CALL BATTLE_START
+				FLAG:逃走不可フラグ = 0
+				FLAG:会話不能フラグ = 0
+				FLAG:先制不意打ちキャンセル = 0
+				
+				;カズフェル合体開放。
+				FLAG:(10000 + [[キャラ:カズフェル]]) = 1
+				
+				CALL MESSAGE_WINDOW_D, "カズフェル", "ど、どうして？/私にはまだやることが……/＞人々を、千年王国へ導かなければいけないのに！"
+				CALL MESSAGE_WINDOW_D, "", "＞倒れたカズフェルが人間の姿に戻っている……/＞見るからに重体だ/＞このまま放っておけばどちらにしろ死ぬだろう"
+				CALL INPUT_SELECT_D, "どうする？/[0]とどめを刺し亡骸を見せしめにする /[1]持ち帰って奴隷にする"
+				
+				IF RESULT == 0
+					CALL MESSAGE_WINDOW_D, "カズフェル", "いや、いや、いや……！/待って、わたし、まだ、なにも……/ヒッ"
+					CALL MESSAGE_WINDOW_D, "", "＞あなたは刎ねた少女の首を袋に詰め、/＞動かなくなった体を割れた展望台から下に落とした"
+					CALL MESSAGE_WINDOW_D, "", "＞……おや？　血だまりの中に、マジックアイテムが落ちている"
+					;耐精神のリング
+					CALL GET_ITEM,5068,1
+					CALL MESSAGE_WINDOW_D, "", "/＞耐精神のリングを拾った/" , , , , , , , , , "CENTER"
+					
+					CFLAG:MASTER:善悪値 -= 16
+					CFLAG:MASTER:秩混値 -= 16
+				ELSEIF RESULT == 1
+					CALL MESSAGE_WINDOW_D, "カズフェル", "さ、触らないで、いやっ……！/ファントムの性奴隷なんてっ……神の教えに、反する！/殺して！　殺しなさいっ、嫌ああああ！　むぐっ"
+					CALL MESSAGE_WINDOW_D, "", "＞半魔か？　転生体か？　デビルシフターか？/＞なんにせよ面白い"
+					CALL MESSAGE_WINDOW_D, "", "＞あなたは身動きの取れなくなったカズフェルに猿ぐつわを噛ませると/＞縛って死体袋に捻じ込んだ"
+					CALL MESSAGE_WINDOW_D, "","＞奴隷　カズフェルを手に入れた"
+					
+					CALL ADD_NEW_COMPANION,[[キャラ:カズフェル]],0
+					IF RESULT == 1
+						;都合のいい人型になってもらおう。羽根はそのままで
+						;異形が良い人は合体で作ってね
+						TALENT:(RESULT:1):人化 = 1
+						TALENT:(RESULT:1):足 = 1
+						TALENT:(RESULT:1):絶壁 = 0
+						TALENT:(RESULT:1):青肌 = 0
+						
+						;妥協で半魔
+						;……に、しようと思ったら、これCOMPに入っちゃうんだよね！　忘れてた！！！
+						;解釈違いです！！！　カズちゃんのファンやめます！！！
+						;といういきさつが（頭の中で）あり人間になりました。しかたないね
+						;このとおり行き当たりばったりにやってるので何か不具合があれば適当に変えてくだち
+						ABL:(RESULT:1):種族 = 0
+						CSTR:(RESULT:1):種族名 = 天使
+						;無難に異能者に
+						TALENT:(RESULT:1):異能者 = 1
+						
+						;とりあえず服
+						CFLAG:(RESULT:1):帽子 = 0
+						CFLAG:(RESULT:1):服 = 318
+						CFLAG:(RESULT:1):下着（上） = 501
+						CFLAG:(RESULT:1):下着（下） = 602
+						CFLAG:(RESULT:1):靴下 = 801
+						CFLAG:(RESULT:1):靴 = 901
+						
+						BASE:(RESULT:1):LV = 30
+						BASE:(RESULT:1):ＥＸＰ = 5*(29)*(31)*(30)/3*5/4
+						;合計63で再設定
+						BASE:(RESULT:1):力 = 3
+						BASE:(RESULT:1):知恵 = 20
+						BASE:(RESULT:1):魔力 = 12
+						BASE:(RESULT:1):耐力 = 18
+						BASE:(RESULT:1):速さ = 7
+						BASE:(RESULT:1):運 = 3
+						MAXBASE:(RESULT:1):LV = 30
+						MAXBASE:(RESULT:1):力 = 3
+						MAXBASE:(RESULT:1):知恵 = 20
+						MAXBASE:(RESULT:1):魔力 = 12
+						MAXBASE:(RESULT:1):耐力 = 18
+						MAXBASE:(RESULT:1):速さ = 7
+						MAXBASE:(RESULT:1):運 = 3
+					
+						;レベルを下げたので習得レベルも調整
+						ABL:(RESULT:1):習得LV1 = 32
+						ABL:(RESULT:1):習得LV2 = 35
+						ABL:(RESULT:1):習得LV3 = 37
+						ABL:(RESULT:1):習得LV4 = 39
+						ABL:(RESULT:1):習得LV5 = 42
+						
+						;せっかくなのでスキル追加、回転説法
+						ABL:(RESULT:1):習得スキル6 = 1320
+						ABL:(RESULT:1):習得LV6 = 48
+						
+					ENDIF
+				ENDIF
+				CALL MESSAGE_WINDOW_D, "魔女", "……あー、えっと/天使をやっつけてくれてありがとう"
+				CALL MESSAGE_WINDOW_D, "魔女", "で、アンタ、味方なの？"
+				CALL MESSAGE_WINDOW_D, "", "＞東京タワーの魔女は、深くかぶったフードの下から、ギラギラした視線を向けている"
+				CALL MESSAGE_WINDOW_D, "", "＞あなたは、目的はメシア教徒の討伐であることを告げ、/＞とりあえず武器をその場に置いた"
+				CALL MESSAGE_WINDOW_D, "魔女", "……ああ、なるほど/安く見られたから殺したってわけね。/実にヤクザなモノの考え方だけど、アタシは嫌いじゃないわ"
+				CALL MESSAGE_WINDOW_D, "魔女", "ま、おかげで命拾いした。/何かお礼をしたいところだけど……"
+				CALL MESSAGE_WINDOW_D, "魔女", "あ、そうだ/ターミナルの裏の、ヘソクリ部屋を開けとくわ/好きでしょ？　武器と防具とお金"
+				CALL MESSAGE_WINDOW_D, "", "＞魔女はニンマリと笑って自分の背後を指さした……"
+				
+				;助けた
+				ダンジョンフラグ:27:11 = 11
+				CALL SET_TILE, 1 , 3 , ダンジョンフラグ:27:11 , 11 , 3001
+				
+				
+				RETURN 1
+			ENDIF
+	ENDSELECT
+ELSEIF DA:(FLAG:現X):(FLAG:現Y) %10 == 9
+	SELECTCASE DA:(FLAG:現X):(FLAG:現Y) /10
+		CASE 300
+			CALL DUNGEON_TERMINAL
+			RETURN 1
+	ENDSELECT
+ENDIF
+RETURN 0
+
+
+
+
+
+;=======================================================================
+;エンカウント率
+;=======================================================================
+@ENCOUNT_RATE_27
+SELECTCASE FLAG:現M
+	CASE 0 , 1
+		FLAG:エンカウント率 = FLAG:未遭遇歩数*5
+	CASE 2 , 3
+		FLAG:エンカウント率 = FLAG:未遭遇歩数*6
+	CASE 4
+		FLAG:エンカウント率 = FLAG:未遭遇歩数*5
+	CASEELSE
+		FLAG:エンカウント率 = FLAG:未遭遇歩数*5
+ENDSELECT
+;クリア後、メシア教が占拠した、またはファントムが占拠した場合、悪魔の出現は止まる
+SIF FLAG:未遭遇歩数 < 5 || (ダンジョンフラグ:27:1 && (ダンジョンフラグ:27:11 == 13 || ダンジョンフラグ:27:11 == 14))
+	FLAG:エンカウント率 = 0
+;=======================================================================
+;必要レベル目安
+;推奨LV 雑魚最低LV 雑魚最高LV ボスLV 
+;=======================================================================
+@GET_DUNGEON_LV_27
+RETURN 30, 25, 34, 42
+;=======================================================================
+;エンカウント処理
+;=======================================================================
+@CHECK_ENCOUNT_27
+IF RAND:100 < FLAG:エンカウント率
+	CALL ENEMY_TABLE
+	IF RAND:3 == 1
+		ABL:(CHARANUM-1):アイテム2 = 1415
+		ABL:(CHARANUM-1):入手確率2 = 8
+	ELSEIF RAND:2 == 1
+		ABL:(CHARANUM-1):アイテム2 = 1416
+		ABL:(CHARANUM-1):入手確率2 = 8
+	ELSE
+		ABL:(CHARANUM-1):アイテム2 = 1417
+		ABL:(CHARANUM-1):入手確率2 = 8
+	ENDIF
+	
+	RETURN 1
+ELSE
+	FLAG:未遭遇歩数 += 1
+	RETURN 0
+ENDIF
+;=======================================================================
+;敵の種族の種類数
+;RETURN X でXが種類の数になります
+;あまりいろんなのが混ざっているとCOOPがとりにくくなったり
+;敵の攻撃属性が多くなる傾向にあるので、
+;種類の数は1・2種類を主体に時々3種類くらいを基本にするのが望ましいと思われます
+;=======================================================================
+@CLASS_NUM_27
+SELECTCASE FLAG:現M
+	CASE 0 , 1
+		SELECTCASE RAND:100
+			CASE IS < 50
+				RETURN 1
+			CASEELSE
+				RETURN 1
+		ENDSELECT
+	CASE 2 , 3
+		SELECTCASE RAND:100
+			CASE IS < 50
+				RETURN 2
+			CASEELSE
+				RETURN 3
+		ENDSELECT
+	CASE 4
+		SELECTCASE RAND:100
+			CASE IS < 35
+				RETURN 1
+			CASEELSE
+				RETURN 2
+		ENDSELECT
+ENDSELECT
+
+;=======================================================================
+;敵の総数
+;ARGは出現する敵の種類です
+;RAND(X, Y)はX～Y-1のうちのどれかになるRANDです
+;なお、ここで帰った数字は下限を種族数、上限を10として自動的に調整されます
+;=======================================================================
+@ENEMY_NUM_27, ARG
+SELECTCASE FLAG:現M
+	CASE 0 , 1
+		;1~3あるいは2~5
+		RETURN RAND(ARG, ARG*2+2)
+	CASE 1 , 2
+		;1~4あるいは2~6
+		RETURN RAND(ARG, ARG*2+3)
+	CASE 4
+		;1~4あるいは2~6
+		RETURN RAND(ARG, ARG*2+3)
+ENDSELECT
+;=======================================================================
+;敵の種類
+;=======================================================================
+@ENEMY_27, ARG
+SELECTCASE FLAG:現M
+	;タワー周辺とタワービル
+	CASE 0 , 1
+		;クリアフラグが立っておらず、かつメシア教を潰しに来た場合、2/3で天使＆メシア教徒が出る
+		IF ダンジョンフラグ:27:1 < 1 && RAND:3 > 0 && イベントフラグ:49:0 == 3
+			SELECTCASE RAND:100
+				CASE IS < 20
+					;20%で
+					;RETURN [登場悪魔のキャラ番号], LV　となっています
+					RETURN [[キャラ:プリンシパリティ]],28
+				CASE IS < 35
+					;15%で
+					RETURN [[キャラ:アークエンジェル]],28
+				CASE IS < 50
+					;15%で
+					RETURN [[キャラ:パワー]],31
+				CASE IS < 65
+					;15%で
+					RETURN [[キャラ:ホーリーゴースト]],26
+				CASE IS < 74
+					;9%で
+					RETURN [[キャラ:パワー]],34
+				CASE IS < 83
+					;9%で
+					RETURN [[キャラ:メイガス]],30
+				CASE IS < 92
+					;9%で
+					RETURN [[キャラ:デュナミス]],31
+				CASE IS < 100
+					;8%で
+					RETURN [[キャラ:テンプルナイト]],28
+			ENDSELECT
+		ELSE
+			SELECTCASE RAND:100
+				CASE IS < 20
+					;20%で
+					;RETURN [登場悪魔のキャラ番号], LV　となっています
+					RETURN [[キャラ:エルフ]],27
+				CASE IS < 35
+					;15%で
+					RETURN [[キャラ:バンシー]],27
+				CASE IS < 50
+					;15%で
+					RETURN [[キャラ:フォルトゥナ]],27
+				CASE IS < 65
+					;15%で
+					RETURN [[キャラ:ミュータント]],29
+				CASE IS < 74
+					;9%で
+					RETURN [[キャラ:サラシナヒメ]],28
+				CASE IS < 83
+					;9%で
+					RETURN [[キャラ:ゴルゴン]],29
+				CASE IS < 92
+					;9%で
+					;こんなところで湧いて来るなと言われればその通りだ……
+					RETURN [[キャラ:オルトロス]],30
+				CASE IS < 100
+					;8%で
+					RETURN [[キャラ:ウェンディゴ]],28
+			ENDSELECT
+		ENDIF
+	CASE 2 , 3
+		;クリアフラグが立っておらず、かつメシア教を潰しに来た場合、2/3で天使＆メシア教徒が出る
+		IF ダンジョンフラグ:27:1 < 1 && RAND:3 > 0 && イベントフラグ:49:0 == 3
+			SELECTCASE RAND:100
+				CASE IS < 20
+					;20%で
+					;RETURN [登場悪魔のキャラ番号], LV　となっています
+					RETURN [[キャラ:プリンシパリティ]],28
+				CASE IS < 35
+					;15%で
+					RETURN [[キャラ:アークエンジェル]],28
+				CASE IS < 50
+					;15%で
+					RETURN [[キャラ:パワー]],31
+				CASE IS < 65
+					;15%で
+					RETURN [[キャラ:ホーリーゴースト]],26
+				CASE IS < 74
+					;9%で
+					RETURN [[キャラ:パワー]],34
+				CASE IS < 83
+					;9%で
+					RETURN [[キャラ:メイガス]],30
+				CASE IS < 92
+					;9%で
+					RETURN [[キャラ:デュナミス]],31
+				CASE IS < 100
+					;8%で
+					RETURN [[キャラ:テンプルナイト]],28
+			ENDSELECT
+		ELSE
+			SELECTCASE RAND:100
+				CASE IS < 20
+					;20%で
+					;RETURN [登場悪魔のキャラ番号], LV　となっています
+					RETURN [[キャラ:エルフ]],27
+				CASE IS < 35
+					;15%で
+					RETURN [[キャラ:バンシー]],27
+				CASE IS < 50
+					;15%で
+					RETURN [[キャラ:フォルトゥナ]],26
+				CASE IS < 65
+					;15%で
+					RETURN [[キャラ:ミュータント]],29
+				CASE IS < 74
+					;9%で
+					RETURN [[キャラ:サラシナヒメ]],28
+				CASE IS < 83
+					;9%で
+					RETURN [[キャラ:ゴルゴン]],29
+				CASE IS < 92
+					;9%で
+					;こんなところで湧いて来るなと言われればその通りだ……
+					RETURN [[キャラ:オルトロス]],30
+				CASE IS < 100
+					;8%で
+					RETURN [[キャラ:ウェンディゴ]],28
+			ENDSELECT
+		ENDIF
+	CASE 4
+		SELECTCASE RAND:100
+			CASE IS < 10
+				;10%でピクシーランク１
+				RETURN [[キャラ:ピクシー]],7
+			CASE IS < 20
+				;10%でハーピーランク１
+				RETURN [[キャラ:ハーピー]],7
+			CASE IS < 30
+				;10%でゾンビちゃんランク１
+				RETURN [[キャラ:ゾンビちゃん]],7
+			CASE IS < 40
+				;10%でアプサラスランク1
+				RETURN [[キャラ:アプサラス]],7
+			CASE IS < 50
+				;10%でピクシーランク２
+				RETURN [[キャラ:ピクシー]],9
+			CASE IS < 60
+				;10%でチョンチョンランク１
+				RETURN [[キャラ:チョンチョン]],7
+			CASE IS < 70
+				;10%でノッカーランク1
+				RETURN [[キャラ:ノッカー]],7
+			CASE IS < 80
+				;10%でゾンビくん
+				RETURN [[キャラ:ゾンビくん]],7
+			CASE IS < 90
+				;10%でコボルト
+				RETURN [[キャラ:コボルト]],7
+			CASE IS < 100
+				;10%でカハク
+				RETURN [[キャラ:カハク]],7
+		ENDSELECT
+ENDSELECT
+
+
+;=======================================================================
+;宝箱の中身
+;=======================================================================
+@TREASURE_27
+#LOCALSIZE 3
+;宝箱のフラグ管理用変数の番号
+LOCAL = FLAG:現M + 70
+;そのマップの何番目の宝箱か
+LOCAL:1 = (DA:(FLAG:現X):(FLAG:現Y) / 10) % 100
+
+;/10はIDを10で割る。つまり、下一桁をなくして、二桁目と三桁目を二桁の数字として取り出している
+SELECTCASE DA:(FLAG:現X):(FLAG:現Y) / 10
+	;マップ番号*100+そのマップで何番目の宝箱かを示す数値でどの宝箱かを判別します。
+	;例えば0の場合、0版のマップの0番目の宝箱であることを表しています。
+	CASE 0
+		;@GET_TREASURE,アイテム番号 , 入手個数 , ダンジョンナンバー , 開けた時に操作する変数の番号 , 変数に立てるビット
+		;[[アイテム:傷薬]]は_Rename.csvによって1001番が置換されて渡されます。これは傷薬のアイテム番号です。
+		;そしてその個数が1個、ダンジョンナンバーは宝箱あけるときはよそのダンジョンをあけることがないだろうのでFLAG:現ダンジョンが無難です
+		;LOCALはこの場合マップ番号の0+70で70が代入されています。そして、LOCAL:1にはこの宝箱がこのマップで何番目の宝箱か、つまり0が入っています
+		;このように記述すると、宝箱を開けた場合ダンジョンフラグ:27(エコービルの番号):70 の0番目のビットが立ちます。
+		;MAPをつくるときにこの宝箱はダンジョンフラグ:27(エコービル):70の0番目のビットが立っていない時しか置かないことになってるので、宝箱を開けるとこれで消えます
+		;CALL GET_TREASURE, [[アイテム:傷薬]] , 1 , FLAG:現ダンジョン, LOCAL , LOCAL:1
+	CASE 1
+		;CALL GET_TREASURE, [[アイテム:スキルカード【ヤマオロシ】]] , 1 , FLAG:現ダンジョン, LOCAL , LOCAL:1
+		;DA:(FLAG:現X):(FLAG:現Y) = 24
+	;百の位が1になりました。
+	;これで以下の二つの宝箱はマップ番号1＝タワービルの0番目の宝箱という事になります
+	CASE 100
+		CALL GET_TREASURE, [[アイテム:スキルカード【マハ・アクエス】]] , 1 , FLAG:現ダンジョン, LOCAL , LOCAL:1
+	CASE 200
+		;クリアフラグが立った後だと略奪済み
+		IF ダンジョンフラグ:27:1
+			CALL MESSAGE_WINDOW_D, "", "＞ん？　何かありそうだったが、ガラクタしか入っていない"
+		ELSE
+			CALL GET_TREASURE, [[アイテム:スキルカード【ギガオン】]] , 1 , FLAG:現ダンジョン, LOCAL , LOCAL:1
+		ENDIF
+	CASE 201
+		;クリアフラグが立った後だと略奪済み
+		IF ダンジョンフラグ:27:1
+			CALL MESSAGE_WINDOW_D, "", "＞ん？　何かありそうだったが、ガラクタしか入っていない"
+		ELSE
+			CALL GET_TREASURE, [[アイテム:ミリ飯MRE]] , 5 , FLAG:現ダンジョン, LOCAL , LOCAL:1
+		ENDIF
+	CASE 202
+		;クリアフラグが立った後だと略奪済み
+		IF ダンジョンフラグ:27:1
+			CALL MESSAGE_WINDOW_D, "", "＞ん？　何かありそうだったが、ガラクタしか入っていない"
+		ELSE
+			CALL GET_TREASURE, [[アイテム:耐核熱のリング]] , 1 , FLAG:現ダンジョン, LOCAL , LOCAL:1
+		ENDIF
+	CASE 203
+		CALL GET_TREASURE, [[アイテム:力の香]] , 1 , FLAG:現ダンジョン, LOCAL , LOCAL:1
+	CASE 204
+		CALL GET_TREASURE, [[アイテム:スキルカード【ダムドーラ】]] , 1 , FLAG:現ダンジョン, LOCAL , LOCAL:1
+	CASE 205
+		CALL GET_TREASURE, [[アイテム:三節棍]] , 1 , FLAG:現ダンジョン, LOCAL , LOCAL:1
+	CASE 205
+		;罠箱
+		;@GET_TREASURE_TRAP , 罠の種類 , ダメージ量or確率 , 相性番号 , ダンジョンナンバー , 開けた時に操作する変数の番号 , 変数に立てるビット
+		;第一引数が"ＨＰ"か"ＭＰ"なら最大値に対する第二引数％の割合ダメージを、
+		;バッドステータス名であれば第二引数％の確率でそのバッドステータスになります。この場合、第三引数の番号の相性に対する耐性で確率が変化します
+		;この箱は味方全員のHPを40%減らす罠です。
+		CALL GET_TREASURE_TRAP, "ＨＰ", 40 , GET_TYPE_NUM("万能") , FLAG:現ダンジョン, LOCAL , LOCAL:1
+	CASE 300
+		CALL GET_TREASURE, [[アイテム:青釭の剣]] , 1 , FLAG:現ダンジョン, LOCAL , LOCAL:1
+	CASE 301
+		CALL GET_TREASURE, [[アイテム:レディースメイル]] , 1 , FLAG:現ダンジョン, LOCAL , LOCAL:1
+	CASE 302
+		;@GET_TREASURE_MONEY ,￥or魔貨 , 入手額 , ダンジョンナンバー , 開けた時に操作する変数の番号 , 変数に立てるビット
+		;第一引数が0なら￥、1なら魔貨を入手します
+		;この宝箱には￥1000が入っています
+		CALL GET_TREASURE_MONEY, 1 , 500 , FLAG:現ダンジョン, LOCAL , LOCAL:1
+	CASE 303
+		CALL GET_TREASURE, [[アイテム:無敵のミニ]] , 1 , FLAG:現ダンジョン, LOCAL , LOCAL:1
+ENDSELECT
+RETURN 1
+
+;=======================================================================
+;階段置き場
+;=======================================================================
+;上り階段処理
+@UPSTAIRS_27
+SELECTCASE DA:(FLAG:現X):(FLAG:現Y) /10
+;	;IDで分岐
+;			;@DUNGEON_UPSTAIRS_ID , 階段を進んだ先のマップ番号 , 移動先のタイルのID
+;			;２Ｆ＝マップ番号1番の0番目の下り階段 = 1 * 1000 + 0 * 10 + 7 = 1007へと飛ぶ
+;	;メインデッキ上り階段
+	CASE 200
+			CALL DUNGEON_UPSTAIRS_ID, 3 , 3007
+	CASE 201
+			CALL DUNGEON_UPSTAIRS_ID, 3 , 3017
+	CASEELSE
+			CALL DUNGEON_UPSTAIRS_ID, FLAG:現M+1 , (FLAG:現M + 1) * 1000 + 7
+ENDSELECT
+
+RETURN 1
+
+;下り階段処理
+@DOWNSTAIRS_27
+SELECTCASE DA:(FLAG:現X):(FLAG:現Y) /10
+;	;IDで分岐
+;			;@DUNGEON_UPSTAIRS_ID , 階段を進んだ先のマップ番号 , 移動先のタイルのID
+;			;２Ｆ＝マップ番号1番の0番目の下り階段 = 1 * 1000 + 0 * 10 + 7 = 1007へと飛ぶ
+;	;トップデッキ下り階段
+	CASE 300
+			CALL DUNGEON_DOWNSTAIRS_ID, 2 , 2006
+	CASE 301
+			CALL DUNGEON_DOWNSTAIRS_ID, 2 , 2016
+	CASEELSE
+			CALL DUNGEON_DOWNSTAIRS_ID, FLAG:現M-1 , (FLAG:現M - 1) * 1000 + 6
+ENDSELECT
+RETURN 1
+
+;=======================================================================
+;エレベーター定義
+;=======================================================================
+;ARGはそのエレベーターのタイル
+@DUNGEON_ELEVATOR_27, ARG
+;RESULT:1～5にエレベータが存在するマップの番号を代入し、RESULTS:1～5には表示したい名称を代入、RETURNでは-1を返しておく
+RESULT:1 = 0
+RESULT:2 = 1
+RESULT:3 = 2
+RESULT:4 = 3
+RESULT:5 = 4
+RESULTS:1 = １Ｆ
+RESULTS:2 = ２Ｆ
+RESULTS:3 = ３Ｆ
+RESULTS:4 = ４Ｆ
+RESULTS:5 = ５Ｆ
+RETURN -1
+
+;=======================================================================
+;輪姦参加悪魔
+;=======================================================================
+@DUNGEON_RAPE_DEVIL_27
+;ランダムにどの悪魔が出るか決定
+;RETURN CSV番号 , 人数 , レベル
+SELECTCASE RAND:3
+	CASE 0
+		RETURN [[キャラ:エルフ]] , 3 + RAND:10 , CSVBASE([[キャラ:エルフ]] , GETNUM(BASE , "LV") , 0) + RAND:3
+	CASE 1
+		RETURN [[キャラ:ゴルゴン]] , 3 + RAND:10 , CSVBASE([[キャラ:ゴルゴン]] , GETNUM(BASE , "LV") , 0) + RAND:3
+	CASE 2
+		RETURN [[キャラ:オルトロス]] , 3 + RAND:10 , CSVBASE([[キャラ:オルトロス]] , GETNUM(BASE , "LV") , 0) + RAND:3
+ENDSELECT
+
+;=======================================================================
+;ボス戦ACTENDイベント
+;=======================================================================
+@EVENT_BATTLE_ACTEND_DUNGEON27
+;東京タワーの魔女はHP50％未満でミサイルをﾌﾞｯﾊﾟするように
+IF NO:(CHARANUM-1) == [[キャラ:東京タワーの魔女]] && ABL:(CHARANUM-1):スキル7 != 0 && 現HP割合(CHARANUM-1) < 50
+	PRINTFORML 
+	PRINTFORML ┏>MESSAGE━━━━━━━━━━━━━━━━━━┓
+	PRINTFORML ┃消し飛んでも、恨まないでよ　　　　　　　　　┃
+	PRINTFORML ┗━━━━━━━━━━━━━━━━━━━━━━┛
+	PRINTFORMW ＞魔女はミサイルを装填した
+	;マリンカリンとニュークリアミサイルを交換
+	ABL:(CHARANUM-1):スキル3 = [[スキル:ニュークリアミサイル]]
+	;ドルミナー、ライトブラストを封印
+	ABL:(CHARANUM-1):スキル6 = 0
+	ABL:(CHARANUM-1):スキル7 = 0
+	CFLAG:(CHARANUM-1):行動回数 = 3
+;カズフェルはHP50％未満で行動変化
+ELSEIF NO:(CHARANUM-1) == [[キャラ:カズフェル]] && ABL:(CHARANUM-1):スキル4 != [[スキル:誘惑の霧]] && 現HP割合(CHARANUM-1) < 50
+	PRINTFORML 
+	PRINTFORML ┏>MESSAGE━━━━━━━━━━━━━━━━━━┓
+	PRINTFORML ┃愚かなり、デビル・サマナー！　　　　　　　　┃
+	PRINTFORML ┃それだけの力を持ちながら、　　　　　　　　　┃
+	PRINTFORML ┃神の御心を妨げるなんて！　　　　　　　　　　┃
+	PRINTFORMW ┗━━━━━━━━━━━━━━━━━━━━━━┛
+	;マリンカリン⇒誘惑の霧
+	ABL:(CHARANUM-1):スキル4 = [[スキル:誘惑の霧]]
+	
+;カズフェルはHP15％未満で発狂
+ELSEIF NO:(CHARANUM-1) == [[キャラ:カズフェル]] && ABL:(CHARANUM-1):スキル1 != [[スキル:回転説法]] && 現HP割合(CHARANUM-1) < 15
+	PRINTFORML 
+	PRINTFORML ┏>MESSAGE━━━━━━━━━━━━━━━━━━┓
+	PRINTFORML ┃なぜ、なぜ刃を向けるのです……！？　　　　　┃
+	PRINTFORML ┃私はただ、人をより良い方向へ　　　　　　　　┃
+	PRINTFORML ┃導いてあげたいだけなのに……！　　　　　　　┃
+	PRINTFORMW ┗━━━━━━━━━━━━━━━━━━━━━━┛
+	;高揚の歌⇒回転説法
+	ABL:(CHARANUM-1):スキル1 = [[スキル:回転説法]]
+	;ラク・カジャ⇒削除
+	ABL:(CHARANUM-1):スキル5 = 0
+	
+ENDIF
+
+
+
+
+
+
+;※SCP-191 Cyborg Child　の帰属
+;本パッチに含まれる【SCP-191 Cyborg Child】に関する一切の記述は"DrClef"作【SCP-191 Cyborg Child】に基づきます。
+;http://ja.scp-wiki.net/scp-191
+;
+;また、ライセンスはクリエイティブコモンズ　表示-継承3.0ライセンス(CC BY-SA 3.0)に準拠します。
+;https://creativecommons.org/licenses/by-sa/3.0/deed.ja
+;
+;---以下ライセンス条項日本語版---
+;表示　継承 3.0 非移植 (CC BY-SA 3.0)
+;これは人が読んでわかりやすいようにしたライセンスの要約です。(ライセンスの代わりになるものではありません。) 免責条項.
+;
+;【あなたは以下の条件に従う限り、自由に：】
+;
+;共有
+;　どのようなメディアやフォーマットでも資料を複製したり、再配布できます。
+;翻案
+;　マテリアルをリミックスしたり、改変したり、別の作品のベースにしたりできます。
+;営利目的も含め、どのような目的でも。
+;
+;あなたがライセンスの条件に従っている限り、許諾者がこれらの自由を取り消すことはできません。
+;
+;【あなたの従うべき条件は以下の通りです】
+;表示
+;　あなたは 適切なクレジットを表示し、ライセンスへのリンクを提供し、変更があったらその旨を示さなければなりません。これらは合理的であればどのような方法で行っても構いませんが、許諾者があなたやあなたの利用行為を支持していると示唆するような方法は除きます。
+;
+;継承
+;　もしあなたがこの資料をリミックスしたり、改変したり、加工した場合には、あなたはあなたの貢献部分を元の作品と同じライセンスの下に頒布しなければなりません。
+;
+;追加的な制約は課せません
+;　あなたは、このライセンスが他の者に許諾することを法的に制限するようないかなる法的規定も技術的手段 も適用してはなりません。
+;
+;【ご注意：】
+;あなたは、資料の中でパブリック・ドメインに属している部分に関して、あるいはあなたの利用が著作権法上の権利制限規定にもとづく場合には、ライセンスの規定に従う必要はありません。
+;
+;保証は提供されていません。ライセンスはあなたの利用に必要な全ての許諾を与えないかも知れません。例えば、パブリシティ権、肖像権、人格権 などの他の諸権利はあなたがどのように資料を利用するかを制限することがあります。
