@@ -1,0 +1,17 @@
+﻿*.sav
+*.log
+*.lnk
+*.exe
+*.txt
+CSV/*
+ERB/*
+resources/*
+readme集/*
+各種テンプレート/*
+資料/*
+説明書/*
+没/*
+
+
+
+
